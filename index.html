@@ -197,3 +197,207 @@
         };
 
         firebase.initializeApp(firebaseConfig);
+                const auth = firebase.auth();
+        const database = firebase.database();
+        let currentUser = null;
+        let transactions = [];
+
+        auth.onAuthStateChanged(user => {
+            if (user) {
+                currentUser = user;
+                document.getElementById('loginScreen').style.display = 'none';
+                document.getElementById('mainApp').style.display = 'block';
+                document.getElementById('userEmail').textContent = user.email;
+                loadTransactions();
+            } else {
+                currentUser = null;
+                document.getElementById('loginScreen').style.display = 'flex';
+                document.getElementById('mainApp').style.display = 'none';
+            }
+        });
+
+        function showError(message) {
+            const errorDiv = document.getElementById('loginError');
+            errorDiv.textContent = message;
+            errorDiv.style.display = 'block';
+            setTimeout(() => { errorDiv.style.display = 'none'; }, 5000);
+        }
+
+        async function login() {
+            const email = document.getElementById('loginEmail').value;
+            const password = document.getElementById('loginPassword').value;
+            try {
+                await auth.signInWithEmailAndPassword(email, password);
+            } catch (error) {
+                showError(error.message);
+            }
+        }
+
+        async function register() {
+            const email = document.getElementById('loginEmail').value;
+            const password = document.getElementById('loginPassword').value;
+            if (password.length < 6) {
+                showError('La password deve essere di almeno 6 caratteri');
+                return;
+            }
+            try {
+                await auth.createUserWithEmailAndPassword(email, password);
+            } catch (error) {
+                showError(error.message);
+            }
+        }
+
+        function logout() {
+            auth.signOut();
+        }
+
+        function loadTransactions() {
+            const userRef = database.ref('transactions/' + currentUser.uid);
+            userRef.on('value', (snapshot) => {
+                transactions = [];
+                snapshot.forEach((childSnapshot) => {
+                    transactions.push({ id: childSnapshot.key, ...childSnapshot.val() });
+                });
+                updateStatistics();
+                loadHistory();
+            });
+        }
+
+        async function addTransaction() {
+            const descrizione = document.getElementById('descrizione').value;
+            const importo = parseFloat(document.getElementById('importo').value);
+            const tipo = document.getElementById('tipo').value;
+            const categoria = document.getElementById('categoria').value;
+
+            if (!descrizione || !importo) {
+                alert('Compila tutti i campi!');
+                return;
+            }
+
+            const transaction = {
+                descrizione,
+                importo,
+                tipo,
+                categoria,
+                data: new Date().toISOString()
+            };
+
+            await database.ref('transactions/' + currentUser.uid).push(transaction);
+
+            document.getElementById('descrizione').value = '';
+            document.getElementById('importo').value = '';
+        }
+
+        function updateStatistics() {
+            const now = new Date();
+            const currentMonth = now.getMonth();
+            const currentYear = now.getFullYear();
+            const currentWeek = getWeekNumber(now);
+
+            let entrateMese = 0, usciteMese = 0;
+            let entrateSettimana = 0, usciteSettimana = 0;
+
+            transactions.forEach(t => {
+                const transDate = new Date(t.data);
+                const transMonth = transDate.getMonth();
+                const transYear = transDate.getFullYear();
+                const transWeek = getWeekNumber(transDate);
+
+                if (transMonth === currentMonth && transYear === currentYear) {
+                    if (t.tipo === 'entrata') entrateMese += t.importo;
+                    else usciteMese += t.importo;
+                }
+
+                if (transWeek === currentWeek && transYear === currentYear) {
+                    if (t.tipo === 'entrata') entrateSettimana += t.importo;
+                    else usciteSettimana += t.importo;
+                }
+            });
+
+            document.getElementById('entrateMese').textContent = `€${entrateMese.toFixed(2)}`;
+            document.getElementById('usciteMese').textContent = `€${usciteMese.toFixed(2)}`;
+            document.getElementById('bilancio').textContent = `€${(entrateMese - usciteMese).toFixed(2)}`;
+            document.getElementById('entrateSettimana').textContent = `€${entrateSettimana.toFixed(2)}`;
+            document.getElementById('usciteSettimana').textContent = `€${usciteSettimana.toFixed(2)}`;
+            document.getElementById('bilancioSettimana').textContent = `€${(entrateSettimana - usciteSettimana).toFixed(2)}`;
+        }
+
+        function getWeekNumber(date) {
+            const d = new Date(Date.UTC(date.getFullYear(), date.getMonth(), date.getDate()));
+            const dayNum = d.getUTCDay() || 7;
+            d.setUTCDate(d.getUTCDate() + 4 - dayNum);
+            const yearStart = new Date(Date.UTC(d.getUTCFullYear(), 0, 1));
+            return Math.ceil((((d - yearStart) / 86400000) + 1) / 7);
+        }
+
+        function showPage(page) {
+            document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+            document.querySelectorAll('.nav-buttons button').forEach(b => b.classList.remove('active'));
+
+            document.getElementById(page + 'Page').classList.add('active');
+            event.target.classList.add('active');
+
+            if (page === 'history') loadHistory();
+        }
+
+        function loadHistory() {
+            const filterTipo = document.getElementById('filterTipo').value;
+            const filterPeriodo = document.getElementById('filterPeriodo').value;
+            const now = new Date();
+
+            let filtered = transactions.filter(t => {
+                if (filterTipo !== 'tutti' && t.tipo !== filterTipo) return false;
+
+                const transDate = new Date(t.data);
+                if (filterPeriodo === 'settimana') {
+                    return getWeekNumber(transDate) === getWeekNumber(now) && transDate.getFullYear() === now.getFullYear();
+                }
+                if (filterPeriodo === 'mese') {
+                    return transDate.getMonth() === now.getMonth() && transDate.getFullYear() === now.getFullYear();
+                }
+                return true;
+            });
+
+            filtered.sort((a, b) => new Date(b.data) - new Date(a.data));
+
+            const historyList = document.getElementById('historyList');
+            historyList.innerHTML = '';
+
+            filtered.forEach(t => {
+                const div = document.createElement('div');
+                div.className = `transaction-item ${t.tipo}`;
+                div.innerHTML = `
+                    <div class="transaction-info">
+                        <strong>${t.descrizione}</strong> - ${t.categoria}<br>
+                        <small>${new Date(t.data).toLocaleString('it-IT')}</small>
+                    </div>
+                    <div class="transaction-amount ${t.tipo}">
+                        ${t.tipo === 'entrata' ? '+' : '-'}€${t.importo.toFixed(2)}
+                    </div>
+                    <button class="delete-btn" onclick="deleteTransaction('${t.id}')">✕</button>
+                `;
+                historyList.appendChild(div);
+            });
+        }
+
+        async function deleteTransaction(id) {
+            if (confirm('Sei sicuro di voler eliminare questa transazione?')) {
+                await database.ref('transactions/' + currentUser.uid + '/' + id).remove();
+            }
+        }
+
+        function downloadBackup() {
+            const data = JSON.stringify(transactions, null, 2);
+            const blob = new Blob([data], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `budget-backup-${new Date().toISOString().split('T')[0]}.json`;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+        }
+    </script>
+</body>
+</html>
