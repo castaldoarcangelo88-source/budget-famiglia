@@ -10,13 +10,13 @@
             padding: 0;
             box-sizing: border-box;
         }
-        
+
         html, body {
             width: 100%;
             height: 100%;
             overflow-x: hidden;
         }
-        
+
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
@@ -26,691 +26,399 @@
             align-items: center;
             padding: 10px;
         }
-        
+
         .container {
             background: rgba(20, 20, 30, 0.95);
             border-radius: 15px;
             padding: 15px;
-            max-width: 900px;
+            max-width: 600px;
             width: 100%;
-            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
-            border: 1px solid rgba(255, 255, 255, 0.1);
+            box-shadow: 0 10px 50px rgba(0,0,0,0.3);
+            color: white;
         }
-        
-        .header {
-            text-align: center;
-            margin-bottom: 20px;
-            color: #00d4ff;
-        }
-        
-        .header h1 {
-            font-size: 1.8em;
-            margin-bottom: 8px;
-            text-shadow: 0 0 20px rgba(0, 212, 255, 0.5);
-        }
-        
-        .header p {
-            color: #a0a0b0;
-            font-size: 0.9em;
-        }
-        
-        .stats {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
-            gap: 12px;
-            margin-bottom: 20px;
-        }
-        
-        .stat-card {
-            background: linear-gradient(135deg, rgba(0, 212, 255, 0.1) 0%, rgba(0, 150, 200, 0.1) 100%);
-            border: 1px solid rgba(0, 212, 255, 0.3);
-            border-radius: 12px;
-            padding: 15px;
-            text-align: center;
-        }
-        
-        .stat-label {
-            color: #a0a0b0;
-            font-size: 0.8em;
-            margin-bottom: 8px;
-        }
-        
-        .stat-value {
-            font-size: 1.4em;
-            color: #00d4ff;
-            font-weight: bold;
-        }
-        
-        .form-section {
-            background: rgba(30, 30, 40, 0.8);
-            border-radius: 12px;
-            padding: 15px;
-            margin-bottom: 15px;
-            border: 1px solid rgba(0, 212, 255, 0.2);
-        }
-        
-        .form-group {
-            margin-bottom: 12px;
-        }
-        
-        .form-group label {
-            display: block;
-            color: #a0a0b0;
-            margin-bottom: 6px;
-            font-size: 0.85em;
-        }
-        
-        .form-group input,
-        .form-group select {
-            width: 100%;
-            padding: 10px;
-            background: rgba(255, 255, 255, 0.05);
-            border: 1px solid rgba(0, 212, 255, 0.3);
-            border-radius: 6px;
-            color: #fff;
-            font-size: 0.95em;
-            -webkit-appearance: none;
-            appearance: none;
-        }
-        
-        .form-group input::placeholder {
-            color: #666;
-        }
-        
-        .form-group input:focus,
-        .form-group select:focus {
-            outline: none;
-            background: rgba(255, 255, 255, 0.1);
-            border-color: #00d4ff;
-            box-shadow: 0 0 10px rgba(0, 212, 255, 0.3);
-        }
-        
-        .btn-group {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 8px;
-        }
-        
-        .btn {
-            padding: 11px 8px;
-            border: none;
-            border-radius: 6px;
-            font-size: 0.95em;
-            font-weight: bold;
-            cursor: pointer;
-            transition: all 0.3s;
-            white-space: nowrap;
-            overflow: hidden;
-            text-overflow: ellipsis;
-        }
-        
-        .btn-income {
-            background: linear-gradient(135deg, #00d4ff 0%, #0099cc 100%);
-            color: #fff;
-        }
-        
-        .btn-income:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 10px 20px rgba(0, 212, 255, 0.3);
-        }
-        
-        .btn-expense {
-            background: linear-gradient(135deg, #ff6b6b 0%, #ee5a52 100%);
-            color: #fff;
-        }
-        
-        .btn-expense:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 10px 20px rgba(255, 107, 107, 0.3);
-        }
-        
-        .btn-nav {
-            background: linear-gradient(135deg, #9b59b6 0%, #8e44ad 100%);
-            color: #fff;
-            margin-top: 10px;
-            width: 100%;
-        }
-        
-        .btn-nav:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 10px 20px rgba(155, 89, 182, 0.3);
-        }
-        
-        .transactions {
-            background: rgba(30, 30, 40, 0.8);
-            border-radius: 12px;
-            padding: 15px;
-            border: 1px solid rgba(0, 212, 255, 0.2);
-        }
-        
-        .transaction-item {
-            background: rgba(255, 255, 255, 0.03);
-            border-left: 4px solid #00d4ff;
-            padding: 12px;
-            margin-bottom: 8px;
-            border-radius: 6px;
+
+        #loginScreen {
             display: flex;
-            justify-content: space-between;
-            align-items: center;
-            word-wrap: break-word;
+            flex-direction: column;
+            gap: 20px;
         }
-        
-        .transaction-item.expense {
-            border-left-color: #ff6b6b;
-        }
-        
-        .transaction-item.income {
-            border-left-color: #00d4ff;
-        }
-        
-        .transaction-info {
-            flex: 1;
-            min-width: 0;
-        }
-        
-        .transaction-desc {
-            color: #fff;
-            font-weight: 500;
-            margin-bottom: 3px;
-            word-break: break-word;
-            font-size: 0.95em;
-        }
-        
-        .transaction-time {
-            color: #a0a0b0;
-            font-size: 0.75em;
-        }
-        
-        .transaction-amount {
-            font-size: 1.1em;
-            font-weight: bold;
-            margin-left: 8px;
-            white-space: nowrap;
-        }
-        
-        .transaction-amount.income {
-            color: #00d4ff;
-        }
-        
-        .transaction-amount.expense {
-            color: #ff6b6b;
-        }
-        
-        h2 {
-            color: #00d4ff;
-            margin-bottom: 12px;
-            text-shadow: 0 0 10px rgba(0, 212, 255, 0.3);
-            font-size: 1.3em;
-        }
-        
-        .hidden {
+
+        #mainApp {
             display: none;
         }
-        
-        .backup-list {
-            margin-top: 15px;
+
+        h1 {
+            font-size: 24px;
+            margin-bottom: 10px;
+            text-align: center;
+            background: linear-gradient(45deg, #FFD700, #FFA500);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .login-box {
+            background: rgba(255,255,255,0.05);
+            padding: 30px;
+            border-radius: 10px;
+            text-align: center;
+        }
+
+        .login-box h2 {
+            margin-bottom: 20px;
+        }
+
+        .login-box input {
+            width: 100%;
+            padding: 12px;
+            margin-bottom: 15px;
+            border: none;
+            border-radius: 5px;
+            font-size: 16px;
+        }
+
+        .btn {
+            background: linear-gradient(45deg, #FFD700, #FFA500);
+            color: #000;
+            border: none;
+            padding: 12px 30px;
+            border-radius: 25px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: bold;
+            transition: transform 0.2s;
+        }
+
+        .btn:hover {
+            transform: scale(1.05);
+        }
+
+        .user-info {
+            text-align: right;
+            margin-bottom: 15px;
+            font-size: 14px;
+        }
+
+        .user-info button {
+            background: #f44336;
+            color: white;
+            border: none;
+            padding: 5px 15px;
+            border-radius: 15px;
+            cursor: pointer;
+            margin-left: 10px;
+        }
+
+        .form-row {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 15px;
+            flex-wrap: wrap;
+        }
+
+        .form-row input, .form-row select {
+            flex: 1;
+            min-width: 120px;
+            padding: 10px;
+            border: none;
+            border-radius: 5px;
+            font-size: 14px;
+        }
+
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+
+        .stat-card {
+            background: rgba(255,255,255,0.1);
+            padding: 15px;
+            border-radius: 10px;
+            text-align: center;
+        }
+
+        .stat-card h3 {
+            font-size: 14px;
+            margin-bottom: 8px;
+            opacity: 0.8;
+        }
+
+        .stat-card p {
+            font-size: 20px;
+            font-weight: bold;
+            color: #FFD700;
+        }
+
+        .nav-buttons {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+
+        .nav-buttons button {
+            flex: 1;
+            padding: 10px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: bold;
+            background: rgba(255,255,255,0.1);
+            color: white;
+            transition: background 0.3s;
+        }
+
+        .nav-buttons button.active {
+            background: linear-gradient(45deg, #FFD700, #FFA500);
+            color: #000;
+        }
+
+        #historyList {
             max-height: 400px;
             overflow-y: auto;
         }
-        
-        .backup-item {
-            background: rgba(255, 255, 255, 0.03);
-            border: 1px solid rgba(0, 212, 255, 0.2);
-            border-radius: 8px;
+
+        .transaction-item {
+            background: rgba(255,255,255,0.05);
             padding: 12px;
             margin-bottom: 8px;
+            border-radius: 8px;
             display: flex;
             justify-content: space-between;
             align-items: center;
         }
-        
-        .backup-date {
-            color: #fff;
-            font-size: 0.9em;
+
+        .transaction-item.entrata {
+            border-left: 4px solid #4CAF50;
         }
-        
-        .backup-count {
-            color: #a0a0b0;
-            font-size: 0.8em;
+
+        .transaction-item.uscita {
+            border-left: 4px solid #f44336;
         }
-        
-        .btn-small {
-            padding: 8px 12px;
-            font-size: 0.85em;
-            background: linear-gradient(135deg, #00d4ff 0%, #0099cc 100%);
-            color: #fff;
+
+        .transaction-info {
+            flex: 1;
+        }
+
+        .transaction-amount {
+            font-size: 18px;
+            font-weight: bold;
+        }
+
+        .transaction-amount.entrata {
+            color: #4CAF50;
+        }
+
+        .transaction-amount.uscita {
+            color: #f44336;
+        }
+
+        .delete-btn {
+            background: #f44336;
+            color: white;
             border: none;
-            border-radius: 6px;
+            padding: 8px 15px;
+            border-radius: 5px;
             cursor: pointer;
-            transition: all 0.3s;
+            margin-left: 10px;
         }
-        
-        .btn-small:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 8px 16px rgba(0, 212, 255, 0.3);
+
+        .filters {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 15px;
+            flex-wrap: wrap;
         }
-        
-        input[type="file"] {
+
+        .filters select {
+            flex: 1;
+            min-width: 120px;
+            padding: 8px;
+            border: none;
+            border-radius: 5px;
+        }
+
+        .page {
             display: none;
         }
-        
+
+        .page.active {
+            display: block;
+        }
+
+        .error-message {
+            background: #f44336;
+            color: white;
+            padding: 10px;
+            border-radius: 5px;
+            margin-bottom: 15px;
+            text-align: center;
+        }
+
         @media (max-width: 600px) {
-            .container {
-                border-radius: 10px;
-                padding: 12px;
+            .form-row {
+                flex-direction: column;
             }
-            
-            .header h1 {
-                font-size: 1.5em;
-                margin-bottom: 5px;
-            }
-            
-            .header p {
-                font-size: 0.85em;
-            }
-            
-            .stats {
-                gap: 10px;
-                margin-bottom: 15px;
-            }
-            
-            .stat-card {
-                padding: 12px;
-            }
-            
-            .stat-label {
-                font-size: 0.75em;
-            }
-            
-            .stat-value {
-                font-size: 1.2em;
-            }
-            
-            .form-section {
-                padding: 12px;
-                margin-bottom: 12px;
-            }
-            
-            .form-group {
-                margin-bottom: 10px;
-            }
-            
-            .form-group label {
-                font-size: 0.8em;
-                margin-bottom: 5px;
-            }
-            
-            .form-group input,
-            .form-group select {
-                padding: 8px;
-                font-size: 0.9em;
-            }
-            
-            .btn-group {
-                gap: 6px;
-            }
-            
-            .btn {
-                padding: 10px 6px;
-                font-size: 0.9em;
-            }
-            
-            .transactions {
-                padding: 12px;
-            }
-            
-            .transaction-item {
-                padding: 10px;
-                margin-bottom: 6px;
-            }
-            
-            .transaction-desc {
-                font-size: 0.9em;
-            }
-            
-            .transaction-time {
-                font-size: 0.7em;
-            }
-            
-            .transaction-amount {
-                font-size: 1em;
-            }
-            
-            .btn-group {
-                grid-template-columns: 1fr 1fr;
-            }
-            
-            .btn-income::before {
-                content: '➕ ';
-                font-weight: bold;
-            }
-            
-            .btn-expense::before {
-                content: '➖ ';
+            .form-row input, .form-row select {
+                width: 100%;
             }
         }
     </style>
 </head>
 <body>
     <div class="container">
-        <!-- Pagina Principale -->
-        <div id="mainPage">
-            <div class="header">
-                <h1>💰 Budget Famiglia</h1>
-                <p>Gestione spese mensili e settimanali condivisa</p>
+        <!-- Login Screen -->
+        <div id="loginScreen">
+            <h1>💰 Budget Famiglia</h1>
+            <div class="login-box">
+                <h2>Accesso</h2>
+                <div id="loginError" class="error-message" style="display: none;"></div>
+                <input type="email" id="loginEmail" placeholder="Email" onkeypress="if(event.key==='Enter')login()">
+                <input type="password" id="loginPassword" placeholder="Password" onkeypress="if(event.key==='Enter')login()">
+                <button class="btn" onclick="login()">Accedi</button>
+                <p style="margin-top: 15px; font-size: 14px;">Non hai un account?</p>
+                <button class="btn" onclick="register()" style="background: rgba(255,255,255,0.2);">Registrati</button>
             </div>
-            
-            <div class="form-section">
-                <h2>Aggiungi Transazione</h2>
-                <div class="form-group">
-                    <label>Descrizione</label>
-                    <input type="text" id="description" placeholder="Es. Spesa supermercato">
+        </div>
+
+        <!-- Main App -->
+        <div id="mainApp">
+            <h1>💰 Budget Famiglia</h1>
+            <div class="user-info">
+                <span id="userEmail"></span>
+                <button onclick="logout()">Esci</button>
+            </div>
+
+            <!-- Navigation -->
+            <div class="nav-buttons">
+                <button class="active" onclick="showPage('main')">Principale</button>
+                <button onclick="showPage('history')">Ultimi Movimenti</button>
+                <button onclick="showPage('settings')">Impostazioni</button>
+            </div>
+
+            <!-- Main Page -->
+            <div id="mainPage" class="page active">
+                <!-- Add Transaction Form -->
+                <div class="form-row">
+                    <input type="text" id="descrizione" placeholder="Descrizione">
+                    <input type="number" id="importo" placeholder="Importo (€)" step="0.01">
                 </div>
-                <div class="form-group">
-                    <label>Importo</label>
-                    <input type="number" id="amount" placeholder="0,00" step="0.01">
-                </div>
-                <div class="form-group">
-                    <label>Categoria</label>
-                    <select id="category">
-                        <option value="Alimentari">Alimentari</option>
-                        <option value="Utenze">Utenze</option>
-                        <option value="Intrattenimento">Intrattenimento</option>
-                        <option value="Trasporti">Trasporti</option>
+                <div class="form-row">
+                    <select id="tipo">
+                        <option value="entrata">Entrata</option>
+                        <option value="uscita">Uscita</option>
+                    </select>
+                    <select id="categoria">
+                        <option value="Stipendio">Stipendio</option>
+                        <option value="Spesa">Spesa</option>
+                        <option value="Benzina">Benzina</option>
+                        <option value="Ristorante">Ristorante</option>
+                        <option value="Bollette">Bollette</option>
                         <option value="Altro">Altro</option>
                     </select>
                 </div>
-                <div class="btn-group">
-                    <button class="btn btn-income" onclick="addTransaction('income')">ENTRATA</button>
-                    <button class="btn btn-expense" onclick="addTransaction('expense')">SPESA</button>
+                <div class="form-row">
+                    <button class="btn" onclick="addTransaction()">Aggiungi</button>
                 </div>
-            </div>
-            
-            <div class="stats">
-                <div class="stat-card">
-                    <div class="stat-label">Entrate</div>
-                    <div class="stat-value" id="totalIncome">€0,00</div>
-                </div>
-                <div class="stat-card">
-                    <div class="stat-label">Spese</div>
-                    <div class="stat-value" id="totalExpense">€0,00</div>
-                </div>
-                <div class="stat-card">
-                    <div class="stat-label">Bilancio</div>
-                    <div class="stat-value" id="balance">€0,00</div>
-                </div>
-            </div>
-            
-            <button class="btn btn-nav" onclick="showMovements()">Visualizza Ultimi Movimenti</button>
-            <button class="btn btn-nav" onclick="showSettings()">⚙️ Impostazioni</button>
-        </div>
-        
-        <!-- Pagina Ultimi Movimenti -->
-        <div id="movementsPage" class="hidden">
-            <div class="header">
-                <h1>💰 Budget Famiglia</h1>
-                <p>Ultimi Movimenti</p>
-            </div>
-            
-            <div class="transactions">
-                <h2>Ultimi Movimenti</h2>
-                <div id="transactionList"></div>
-            </div>
-            
-            <button class="btn btn-nav" onclick="showMain()">Torna al Menu Principale</button>
-        </div>
-        
-        <!-- Pagina Impostazioni -->
 
-        <div id="settingsPage" class="hidden">
-            <div class="header">
-                <h1>💰 Budget Famiglia</h1>
-                <p>Impostazioni e Backup</p>
-            </div>
-            
-            <div class="form-section">
-                <h2>Backup Manuale</h2>
-                <div class="btn-group">
-                    <button class="btn btn-income" onclick="exportBackup()">📥 Esporta Backup</button>
-                    <button class="btn btn-expense" onclick="document.getElementById('importFile').click()">📤 Importa Backup</button>
+                <!-- Statistics -->
+                <div class="stats">
+                    <div class="stat-card">
+                        <h3>Entrate Mese</h3>
+                        <p id="entrateMese">€0.00</p>
+                    </div>
+                    <div class="stat-card">
+                        <h3>Uscite Mese</h3>
+                        <p id="usciteMese">€0.00</p>
+                    </div>
+                    <div class="stat-card">
+                        <h3>Bilancio</h3>
+                        <p id="bilancio">€0.00</p>
+                    </div>
+                    <div class="stat-card">
+                        <h3>Entrate Settimana</h3>
+                        <p id="entrateSettimana">€0.00</p>
+                    </div>
+                    <div class="stat-card">
+                        <h3>Uscite Settimana</h3>
+                        <p id="usciteSettimana">€0.00</p>
+                    </div>
+                    <div class="stat-card">
+                        <h3>Bilancio Settimana</h3>
+                        <p id="bilancioSettimana">€0.00</p>
+                    </div>
                 </div>
-                <input type="file" id="importFile" accept=".json" onchange="importBackup(event)">
             </div>
-            
-            <div class="form-section">
-                <h2>Backup Automatici Giornalieri</h2>
-                <p style="color:#a0a0b0;font-size:0.85em;margin-bottom:15px">I backup vengono salvati automaticamente ogni giorno. Qui puoi scaricare i backup degli ultimi 30 giorni.</p>
-                <div id="backupList" class="backup-list"></div>
+
+            <!-- History Page -->
+            <div id="historyPage" class="page">
+                <div class="filters">
+                    <select id="filterTipo" onchange="loadHistory()">
+                        <option value="tutti">Tutti i tipi</option>
+                        <option value="entrata">Solo Entrate</option>
+                        <option value="uscita">Solo Uscite</option>
+                    </select>
+                    <select id="filterPeriodo" onchange="loadHistory()">
+                        <option value="tutti">Tutto</option>
+                        <option value="settimana">Questa Settimana</option>
+                        <option value="mese">Questo Mese</option>
+                    </select>
+                </div>
+                <div id="historyList"></div>
             </div>
-            
-            <button class="btn btn-nav" onclick="showMain()">Torna al Menu Principale</button>
+
+            <!-- Settings Page -->
+            <div id="settingsPage" class="page">
+                <div class="stat-card" style="margin-bottom: 15px;">
+                    <h3>Backup e Ripristino</h3>
+                    <p style="font-size: 14px; margin: 15px 0;">I tuoi dati sono sincronizzati automaticamente su Firebase</p>
+                    <button class="btn" onclick="downloadBackup()">Scarica Backup JSON</button>
+                </div>
+                <div class="stat-card">
+                    <h3>Informazioni</h3>
+                    <p style="font-size: 14px; margin-top: 10px;">Database: Firebase Realtime Database</p>
+                    <p style="font-size: 14px;">Sincronizzazione: Automatica</p>
+                </div>
+            </div>
         </div>
     </div>
-    
+
+    <!-- Firebase SDK -->
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-database-compat.js"></script>
+
     <script>
-        const MAX_TRANSACTIONS = 100;
-        const MAX_DAILY_BACKUPS = 30;
-        
-        function initApp() {
-            loadTransactions();
-            updateStats();
-            createDailyBackup();
-            displayBackupList();
-        }
-        
-        function addTransaction(type) {
-            const desc = document.getElementById('description').value;
-            const amt = parseFloat(document.getElementById('amount').value);
-            const cat = document.getElementById('category').value;
-            
-            if (!desc || !amt) {
-                alert('Compilare tutti i campi');
-                return;
-            }
-            
-            let transactions = JSON.parse(localStorage.getItem('transactions')) || [];
-            const now = new Date();
-            const transaction = {
-                id: Date.now(),
-                type: type,
-                description: desc,
-                amount: amt,
-                category: cat,
-                date: now.toLocaleDateString('it-IT'),
-                time: now.toLocaleTimeString('it-IT', {hour: '2-digit', minute: '2-digit'})
-            };
-            
-            transactions.unshift(transaction);
-            
-            if (transactions.length > MAX_TRANSACTIONS) {
-                transactions = transactions.slice(0, MAX_TRANSACTIONS);
-            }
-            
-            localStorage.setItem('transactions', JSON.stringify(transactions));
-            document.getElementById('description').value = '';
-            document.getElementById('amount').value = '';
-            loadTransactions();
-            updateStats();
-            createDailyBackup();
-        }
-        
-        function loadTransactions() {
-            const transactions = JSON.parse(localStorage.getItem('transactions')) || [];
-            const list = document.getElementById('transactionList');
-            list.innerHTML = '';
-            
-            if (transactions.length === 0) {
-                list.innerHTML = '<p style="color:#a0a0b0;text-align:center;padding:15px">Nessuna transazione</p>';
-                return;
-            }
-            
-            transactions.forEach(t => {
-                const div = document.createElement('div');
-                div.className = `transaction-item ${t.type}`;
-                div.innerHTML = `
-                    <div class="transaction-info">
-                        <div class="transaction-desc">${t.description}</div>
-                        <div class="transaction-time">${t.date} ${t.time}</div>
-                    </div>
-                    <div class="transaction-amount ${t.type}">
-                        ${t.type === 'income' ? '+' : '−'}€${t.amount.toFixed(2)}
-                    </div>
-                `;
-                list.appendChild(div);
-            });
-        }
-        
-        function updateStats() {
-            const transactions = JSON.parse(localStorage.getItem('transactions')) || [];
-            let income = 0, expense = 0;
-            
-            transactions.forEach(t => {
-                if (t.type === 'income') {
-                    income += t.amount;
-                } else {
-                    expense += t.amount;
-                }
-            });
-            
-            document.getElementById('totalIncome').textContent = '€' + income.toFixed(2);
-            document.getElementById('totalExpense').textContent = '€' + expense.toFixed(2);
-            const bal = income - expense;
-            document.getElementById('balance').textContent = '€' + bal.toFixed(2);
-            document.getElementById('balance').style.color = bal >= 0 ? '#00d4ff' : '#ff6b6b';
-        }
-        
-        function showMovements() {
-            document.getElementById('mainPage').classList.add('hidden');
-            document.getElementById('settingsPage').classList.add('hidden');
-            document.getElementById('movementsPage').classList.remove('hidden');
-            loadTransactions();
-        }
-        
-        function showSettings() {
-            document.getElementById('mainPage').classList.add('hidden');
-            document.getElementById('movementsPage').classList.add('hidden');
-            document.getElementById('settingsPage').classList.remove('hidden');
-            displayBackupList();
-        }
-        
-        function showMain() {
-            document.getElementById('movementsPage').classList.add('hidden');
-            document.getElementById('settingsPage').classList.add('hidden');
-            document.getElementById('mainPage').classList.remove('hidden');
-        }
-        
-        function exportBackup() {
-            const transactions = JSON.parse(localStorage.getItem('transactions')) || [];
-            const dataStr = JSON.stringify({
-                transactions: transactions,
-                exportDate: new Date().toISOString()
-            }, null, 2);
-            
-            const dataBlob = new Blob([dataStr], {type: 'application/json'});
-            const url = URL.createObjectURL(dataBlob);
-            const link = document.createElement('a');
-            link.href = url;
-            link.download = `budget-famiglia-backup-${new Date().toISOString().split('T')[0]}.json`;
-            link.click();
-            URL.revokeObjectURL(url);
-        }
-        
-        function importBackup(event) {
-            const file = event.target.files[0];
-            if (!file) return;
-            
-            const reader = new FileReader();
-            reader.onload = function(e) {
-                try {
-                    const data = JSON.parse(e.target.result);
-                    if (data.transactions && Array.isArray(data.transactions)) {
-                        if (confirm(`Importare ${data.transactions.length} transazioni? Questo sostituirà i dati attuali.`)) {
-                            localStorage.setItem('transactions', JSON.stringify(data.transactions));
-                            loadTransactions();
-                            updateStats();
-                            alert('Backup importato con successo!');
-                        }
-                    } else {
-                        alert('File di backup non valido');
-                    }
-                } catch (err) {
-                    alert('Errore nella lettura del file');
-                }
-            };
-            reader.readAsText(file);
-        }
-        
-        function createDailyBackup() {
-            const today = new Date().toISOString().split('T')[0];
-            const backups = JSON.parse(localStorage.getItem('dailyBackups')) || {};
-            
-            const transactions = JSON.parse(localStorage.getItem('transactions')) || [];
-            
-            backups[today] = {
-                date: today,
-                transactions: transactions,
-                count: transactions.length
-            };
-            
-            const dates = Object.keys(backups).sort().reverse();
-            if (dates.length > MAX_DAILY_BACKUPS) {
-                dates.slice(MAX_DAILY_BACKUPS).forEach(date => delete backups[date]);
-            }
-            
-            localStorage.setItem('dailyBackups', JSON.stringify(backups));
-        }
-        
-        function displayBackupList() {
-            const backups = JSON.parse(localStorage.getItem('dailyBackups')) || {};
-            const list = document.getElementById('backupList');
-            list.innerHTML = '';
-            
-            const dates = Object.keys(backups).sort().reverse();
-            
-            if (dates.length === 0) {
-                list.innerHTML = '<p style="color:#a0a0b0;text-align:center;padding:15px">Nessun backup automatico disponibile</p>';
-                return;
-            }
-            
-            dates.forEach(date => {
-                const backup = backups[date];
-                const div = document.createElement('div');
-                div.className = 'backup-item';
-                div.innerHTML = `
-                    <div>
-                        <div class="backup-date">${date}</div>
-                        <div class="backup-count">${backup.count} transazioni</div>
-                    </div>
-                    <button class="btn-small" onclick="downloadDailyBackup('${date}')">Scarica</button>
-                `;
-                list.appendChild(div);
-            });
-        }
-        
-        function downloadDailyBackup(date) {
-            const backups = JSON.parse(localStorage.getItem('dailyBackups')) || {};
-            const backup = backups[date];
-            
-            if (!backup) {
-                alert('Backup non trovato');
-                return;
-            }
-            
-            const dataStr = JSON.stringify({
-                transactions: backup.transactions,
-                exportDate: date
-            }, null, 2);
-            
-            const dataBlob = new Blob([dataStr], {type: 'application/json'});
-            const url = URL.createObjectURL(dataBlob);
-            const link = document.createElement('a');
-            link.href = url;
-            link.download = `budget-famiglia-backup-${date}.json`;
-            link.click();
-            URL.revokeObjectURL(url);
-        }
-        
-        document.addEventListener('DOMContentLoaded', initApp);
-    </script>
-</body>
-</html>
+        // Firebase Configuration
+        const firebaseConfig = {
+            apiKey: "AIzaSyB8E0t2dRpB0ds9nh5VEBJ8rPIyfGRFgOY",
+            authDomain: "budget-famiglia-4477e.firebaseapp.com",
+            databaseURL: "https://budget-famiglia-4477e-default-rtdb.firebaseio.com",
+            projectId: "budget-famiglia-4477e",
+            storageBucket: "budget-famiglia-4477e.firebasestorage.app",
+            messagingSenderId: "915933306200",
+            appId: "1:915933306200:web:c873f3b3649ce901a5d92d"
+        };
+
+        // Initialize Firebase
+        firebase.initializeApp(firebaseConfig);
+        const auth = firebase.auth();
+        const database = firebase.database();
+
+        let currentUser = null;
+        let transactions = [];
+
+        // Auth State Observer
+        auth.onAuthStateChanged(user => {
+            if (user) {
+                currentUser = user;
+                document.getElementById('loginScreen').style.display = 'none';
+                document.getElementById('mainApp').style.display = 'block';
+                document.getElementById('userEmail').textContent = user.email;
+                loadTransactions();
+            } else {
+                currentUser = null;
+                document.getElementById('loginScreen').style.display = 'flex';
+                document.getElementById('mainApp').style.display = 'none';
