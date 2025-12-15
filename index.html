@@ -461,3 +461,256 @@
         </div>
         
         <!-- Pagina Impostazioni -->
+
+        <div id="settingsPage" class="hidden">
+            <div class="header">
+                <h1>💰 Budget Famiglia</h1>
+                <p>Impostazioni e Backup</p>
+            </div>
+            
+            <div class="form-section">
+                <h2>Backup Manuale</h2>
+                <div class="btn-group">
+                    <button class="btn btn-income" onclick="exportBackup()">📥 Esporta Backup</button>
+                    <button class="btn btn-expense" onclick="document.getElementById('importFile').click()">📤 Importa Backup</button>
+                </div>
+                <input type="file" id="importFile" accept=".json" onchange="importBackup(event)">
+            </div>
+            
+            <div class="form-section">
+                <h2>Backup Automatici Giornalieri</h2>
+                <p style="color:#a0a0b0;font-size:0.85em;margin-bottom:15px">I backup vengono salvati automaticamente ogni giorno. Qui puoi scaricare i backup degli ultimi 30 giorni.</p>
+                <div id="backupList" class="backup-list"></div>
+            </div>
+            
+            <button class="btn btn-nav" onclick="showMain()">Torna al Menu Principale</button>
+        </div>
+    </div>
+    
+    <script>
+        const MAX_TRANSACTIONS = 100;
+        const MAX_DAILY_BACKUPS = 30;
+        
+        function initApp() {
+            loadTransactions();
+            updateStats();
+            createDailyBackup();
+            displayBackupList();
+        }
+        
+        function addTransaction(type) {
+            const desc = document.getElementById('description').value;
+            const amt = parseFloat(document.getElementById('amount').value);
+            const cat = document.getElementById('category').value;
+            
+            if (!desc || !amt) {
+                alert('Compilare tutti i campi');
+                return;
+            }
+            
+            let transactions = JSON.parse(localStorage.getItem('transactions')) || [];
+            const now = new Date();
+            const transaction = {
+                id: Date.now(),
+                type: type,
+                description: desc,
+                amount: amt,
+                category: cat,
+                date: now.toLocaleDateString('it-IT'),
+                time: now.toLocaleTimeString('it-IT', {hour: '2-digit', minute: '2-digit'})
+            };
+            
+            transactions.unshift(transaction);
+            
+            if (transactions.length > MAX_TRANSACTIONS) {
+                transactions = transactions.slice(0, MAX_TRANSACTIONS);
+            }
+            
+            localStorage.setItem('transactions', JSON.stringify(transactions));
+            document.getElementById('description').value = '';
+            document.getElementById('amount').value = '';
+            loadTransactions();
+            updateStats();
+            createDailyBackup();
+        }
+        
+        function loadTransactions() {
+            const transactions = JSON.parse(localStorage.getItem('transactions')) || [];
+            const list = document.getElementById('transactionList');
+            list.innerHTML = '';
+            
+            if (transactions.length === 0) {
+                list.innerHTML = '<p style="color:#a0a0b0;text-align:center;padding:15px">Nessuna transazione</p>';
+                return;
+            }
+            
+            transactions.forEach(t => {
+                const div = document.createElement('div');
+                div.className = `transaction-item ${t.type}`;
+                div.innerHTML = `
+                    <div class="transaction-info">
+                        <div class="transaction-desc">${t.description}</div>
+                        <div class="transaction-time">${t.date} ${t.time}</div>
+                    </div>
+                    <div class="transaction-amount ${t.type}">
+                        ${t.type === 'income' ? '+' : '−'}€${t.amount.toFixed(2)}
+                    </div>
+                `;
+                list.appendChild(div);
+            });
+        }
+        
+        function updateStats() {
+            const transactions = JSON.parse(localStorage.getItem('transactions')) || [];
+            let income = 0, expense = 0;
+            
+            transactions.forEach(t => {
+                if (t.type === 'income') {
+                    income += t.amount;
+                } else {
+                    expense += t.amount;
+                }
+            });
+            
+            document.getElementById('totalIncome').textContent = '€' + income.toFixed(2);
+            document.getElementById('totalExpense').textContent = '€' + expense.toFixed(2);
+            const bal = income - expense;
+            document.getElementById('balance').textContent = '€' + bal.toFixed(2);
+            document.getElementById('balance').style.color = bal >= 0 ? '#00d4ff' : '#ff6b6b';
+        }
+        
+        function showMovements() {
+            document.getElementById('mainPage').classList.add('hidden');
+            document.getElementById('settingsPage').classList.add('hidden');
+            document.getElementById('movementsPage').classList.remove('hidden');
+            loadTransactions();
+        }
+        
+        function showSettings() {
+            document.getElementById('mainPage').classList.add('hidden');
+            document.getElementById('movementsPage').classList.add('hidden');
+            document.getElementById('settingsPage').classList.remove('hidden');
+            displayBackupList();
+        }
+        
+        function showMain() {
+            document.getElementById('movementsPage').classList.add('hidden');
+            document.getElementById('settingsPage').classList.add('hidden');
+            document.getElementById('mainPage').classList.remove('hidden');
+        }
+        
+        function exportBackup() {
+            const transactions = JSON.parse(localStorage.getItem('transactions')) || [];
+            const dataStr = JSON.stringify({
+                transactions: transactions,
+                exportDate: new Date().toISOString()
+            }, null, 2);
+            
+            const dataBlob = new Blob([dataStr], {type: 'application/json'});
+            const url = URL.createObjectURL(dataBlob);
+            const link = document.createElement('a');
+            link.href = url;
+            link.download = `budget-famiglia-backup-${new Date().toISOString().split('T')[0]}.json`;
+            link.click();
+            URL.revokeObjectURL(url);
+        }
+        
+        function importBackup(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+            
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                try {
+                    const data = JSON.parse(e.target.result);
+                    if (data.transactions && Array.isArray(data.transactions)) {
+                        if (confirm(`Importare ${data.transactions.length} transazioni? Questo sostituirà i dati attuali.`)) {
+                            localStorage.setItem('transactions', JSON.stringify(data.transactions));
+                            loadTransactions();
+                            updateStats();
+                            alert('Backup importato con successo!');
+                        }
+                    } else {
+                        alert('File di backup non valido');
+                    }
+                } catch (err) {
+                    alert('Errore nella lettura del file');
+                }
+            };
+            reader.readAsText(file);
+        }
+        
+        function createDailyBackup() {
+            const today = new Date().toISOString().split('T')[0];
+            const backups = JSON.parse(localStorage.getItem('dailyBackups')) || {};
+            
+            const transactions = JSON.parse(localStorage.getItem('transactions')) || [];
+            
+            backups[today] = {
+                date: today,
+                transactions: transactions,
+                count: transactions.length
+            };
+            
+            const dates = Object.keys(backups).sort().reverse();
+            if (dates.length > MAX_DAILY_BACKUPS) {
+                dates.slice(MAX_DAILY_BACKUPS).forEach(date => delete backups[date]);
+            }
+            
+            localStorage.setItem('dailyBackups', JSON.stringify(backups));
+        }
+        
+        function displayBackupList() {
+            const backups = JSON.parse(localStorage.getItem('dailyBackups')) || {};
+            const list = document.getElementById('backupList');
+            list.innerHTML = '';
+            
+            const dates = Object.keys(backups).sort().reverse();
+            
+            if (dates.length === 0) {
+                list.innerHTML = '<p style="color:#a0a0b0;text-align:center;padding:15px">Nessun backup automatico disponibile</p>';
+                return;
+            }
+            
+            dates.forEach(date => {
+                const backup = backups[date];
+                const div = document.createElement('div');
+                div.className = 'backup-item';
+                div.innerHTML = `
+                    <div>
+                        <div class="backup-date">${date}</div>
+                        <div class="backup-count">${backup.count} transazioni</div>
+                    </div>
+                    <button class="btn-small" onclick="downloadDailyBackup('${date}')">Scarica</button>
+                `;
+                list.appendChild(div);
+            });
+        }
+        
+        function downloadDailyBackup(date) {
+            const backups = JSON.parse(localStorage.getItem('dailyBackups')) || {};
+            const backup = backups[date];
+            
+            if (!backup) {
+                alert('Backup non trovato');
+                return;
+            }
+            
+            const dataStr = JSON.stringify({
+                transactions: backup.transactions,
+                exportDate: date
+            }, null, 2);
+            
+            const dataBlob = new Blob([dataStr], {type: 'application/json'});
+            const url = URL.createObjectURL(dataBlob);
+            const link = document.createElement('a');
+            link.href = url;
+            link.download = `budget-famiglia-backup-${date}.json`;
+            link.click();
+            URL.revokeObjectURL(url);
+        }
+        
+        document.addEventListener('DOMContentLoaded', initApp);
+    </script>
+</body>
+</html>
