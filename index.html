@@ -41,10 +41,6 @@
         .form-row input, .form-row select {
             flex: 1; min-width: 120px; padding: 10px; border: none; border-radius: 5px; font-size: 14px;
         }
-        .section-title {
-            font-size: 16px; font-weight: bold; margin: 20px 0 15px 0;
-            border-bottom: 2px solid rgba(255,215,0,0.3); padding-bottom: 8px;
-        }
         .stats {
             display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 10px; margin-bottom: 15px;
         }
@@ -89,6 +85,7 @@
 </head>
 <body>
     <div class="container">
+        <!-- Login Screen -->
         <div id="loginScreen">
             <h1>💰 Budget Famiglia</h1>
             <div class="login-box">
@@ -102,6 +99,7 @@
             </div>
         </div>
 
+        <!-- Main App -->
         <div id="mainApp">
             <h1>💰 Budget Famiglia</h1>
             <div class="user-info">
@@ -109,14 +107,15 @@
                 <button onclick="logout()">Esci</button>
             </div>
 
+            <!-- Navigation -->
             <div class="nav-buttons">
                 <button class="active" onclick="showPage(event, 'main')">Principale</button>
                 <button onclick="showPage(event, 'history')">Ultimi Movimenti</button>
                 <button onclick="showPage(event, 'settings')">Impostazioni</button>
             </div>
 
+            <!-- Main Page -->
             <div id="mainPage" class="page active">
-                <div class="section-title">📊 Movimenti Entrate/Uscite</div>
                 <div class="form-row">
                     <input type="text" id="descrizione" placeholder="Descrizione">
                     <input type="number" id="importo" placeholder="Importo (€)" step="0.01">
@@ -136,22 +135,8 @@
                     </select>
                 </div>
                 <div class="form-row">
-                    <button class="btn" onclick="addTransaction()">Aggiungi Movimento</button>
+                    <button class="btn" onclick="addTransaction()">Aggiungi</button>
                 </div>
-
-                <div class="section-title">🏦 Salvadanaio</div>
-                <div class="form-row">
-                    <input type="number" id="piggyImportoMain" placeholder="Importo (€)" step="0.01">
-                    <select id="piggyTipoMain">
-                        <option value="deposito">Deposito</option>
-                        <option value="prelievo">Prelievo</option>
-                    </select>
-                </div>
-                <div class="form-row">
-                    <button class="btn" onclick="addPiggyMovementMain()">Aggiorna Salvadanaio</button>
-                </div>
-
-                <div class="section-title">📈 Statistiche</div>
                 <div class="stats">
                     <div class="stat-card"><h3>Entrate Mese</h3><p id="entrateMese">€0.00</p></div>
                     <div class="stat-card"><h3>Uscite Mese</h3><p id="usciteMese">€0.00</p></div>
@@ -163,6 +148,7 @@
                 </div>
             </div>
 
+            <!-- History Page -->
             <div id="historyPage" class="page">
                 <div class="filters">
                     <select id="filterTipo" onchange="loadHistory()">
@@ -179,10 +165,13 @@
                 <div id="historyList"></div>
             </div>
 
+            <!-- Settings Page -->
             <div id="settingsPage" class="page">
                 <div class="stat-card" style="margin-bottom: 15px;">
                     <h3>Salvadanaio</h3>
-                    <p style="font-size: 14px; margin: 10px 0;">Gestisci depositi e prelievi dal salvadanaio.</p>
+                    <p style="font-size: 14px; margin: 10px 0;">
+                        Gestisci i depositi e i prelievi dal salvadanaio. Il totale è condiviso su tutti i dispositivi collegati a questo account.
+                    </p>
                     <div class="form-row">
                         <input type="number" id="piggyImporto" placeholder="Importo (€)" step="0.01">
                         <select id="piggyTipo">
@@ -196,7 +185,9 @@
                     <div class="form-row">
                         <button class="btn" onclick="addPiggyMovement()">Aggiorna Salvadanaio</button>
                     </div>
-                    <p style="font-size: 14px; margin-top: 10px;">Totale salvadanaio: <strong id="salvadanaioTotaleSettings">€0.00</strong></p>
+                    <p style="font-size: 14px; margin-top: 10px;">
+                        Totale salvadanaio attuale: <strong id="salvadanaioTotaleSettings">€0.00</strong>
+                    </p>
                 </div>
 
                 <div class="stat-card" style="margin-bottom: 15px;">
@@ -205,13 +196,20 @@
                 </div>
 
                 <div class="stat-card">
-                    <h3>Backup</h3>
+                    <h3>Backup e Ripristino</h3>
+                    <p style="font-size: 14px; margin: 15px 0;">I tuoi dati sono sincronizzati automaticamente su Firebase</p>
                     <button class="btn" onclick="downloadBackup()">Scarica Backup JSON</button>
+                </div>
+                <div class="stat-card" style="margin-top: 15px;">
+                    <h3>Informazioni</h3>
+                    <p style="font-size: 14px; margin-top: 10px;">Database: Firebase Realtime Database</p>
+                    <p style="font-size: 14px;">Sincronizzazione: Automatica</p>
                 </div>
             </div>
         </div>
     </div>
 
+    <!-- Firebase SDK -->
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-database-compat.js"></script>
@@ -238,4 +236,299 @@
         auth.onAuthStateChanged(user => {
             if (user) {
                 currentUser = user;
-                
+                document.getElementById('loginScreen').style.display = 'none';
+                document.getElementById('mainApp').style.display = 'block';
+                document.getElementById('userEmail').textContent = user.email;
+                loadTransactions();
+                loadPiggybank();
+            } else {
+                currentUser = null;
+                document.getElementById('loginScreen').style.display = 'flex';
+                document.getElementById('mainApp').style.display = 'none';
+            }
+        });
+
+        function showError(message) {
+            const errorDiv = document.getElementById('loginError');
+            errorDiv.textContent = message;
+            errorDiv.style.display = 'block';
+            setTimeout(() => { errorDiv.style.display = 'none'; }, 5000);
+        }
+
+        async function login() {
+            const email = document.getElementById('loginEmail').value;
+            const password = document.getElementById('loginPassword').value;
+            try {
+                await auth.signInWithEmailAndPassword(email, password);
+            } catch (error) {
+                showError(error.message);
+            }
+        }
+
+        async function register() {
+            const email = document.getElementById('loginEmail').value;
+            const password = document.getElementById('loginPassword').value;
+            if (password.length < 6) {
+                showError('La password deve essere di almeno 6 caratteri');
+                return;
+            }
+            try {
+                await auth.createUserWithEmailAndPassword(email, password);
+            } catch (error) {
+                showError(error.message);
+            }
+        }
+
+        function logout() {
+            auth.signOut();
+        }
+
+        function loadTransactions() {
+            const userRef = database.ref('transactions/' + currentUser.uid);
+            userRef.off(); // evita doppio binding
+            userRef.on('value', (snapshot) => {
+                transactions = [];
+                snapshot.forEach((childSnapshot) => {
+                    transactions.push({ id: childSnapshot.key, ...childSnapshot.val() });
+                });
+                updateStatistics();
+                loadHistory();
+            });
+        }
+
+        async function addTransaction() {
+            const descrizione = document.getElementById('descrizione').value;
+            const importo = parseFloat(document.getElementById('importo').value);
+            const tipo = document.getElementById('tipo').value;
+            const categoria = document.getElementById('categoria').value;
+
+            if (!descrizione || isNaN(importo)) {
+                alert('Compila tutti i campi!');
+                return;
+            }
+
+            const transaction = {
+                descrizione,
+                importo,
+                tipo,
+                categoria,
+                data: new Date().toISOString()
+            };
+
+            await database.ref('transactions/' + currentUser.uid).push(transaction);
+
+            document.getElementById('descrizione').value = '';
+            document.getElementById('importo').value = '';
+        }
+
+        function updateStatistics() {
+            const now = new Date();
+            const currentMonth = now.getMonth();
+            const currentYear = now.getFullYear();
+            const currentWeek = getWeekNumber(now);
+
+            let entrateMese = 0, usciteMese = 0;
+            let entrateSettimana = 0, usciteSettimana = 0;
+
+            transactions.forEach(t => {
+                const transDate = new Date(t.data);
+                const transMonth = transDate.getMonth();
+                const transYear = transDate.getFullYear();
+                const transWeek = getWeekNumber(transDate);
+
+                if (transMonth === currentMonth && transYear === currentYear) {
+                    if (t.tipo === 'entrata') entrateMese += t.importo;
+                    else usciteMese += t.importo;
+                }
+
+                if (transWeek === currentWeek && transYear === currentYear) {
+                    if (t.tipo === 'entrata') entrateSettimana += t.importo;
+                    else usciteSettimana += t.importo;
+                }
+            });
+
+            document.getElementById('entrateMese').textContent = `€${entrateMese.toFixed(2)}`;
+            document.getElementById('usciteMese').textContent = `€${usciteMese.toFixed(2)}`;
+            document.getElementById('bilancio').textContent = `€${(entrateMese - usciteMese).toFixed(2)}`;
+            document.getElementById('entrateSettimana').textContent = `€${entrateSettimana.toFixed(2)}`;
+            document.getElementById('usciteSettimana').textContent = `€${usciteSettimana.toFixed(2)}`;
+            document.getElementById('bilancioSettimana').textContent = `€${(entrateSettimana - usciteSettimana).toFixed(2)}`;
+
+            // aggiorna card salvadanaio sulla main page se già caricato
+            document.getElementById('salvadanaioTotale').textContent = `€${piggyTotal.toFixed(2)}`;
+        }
+
+        function getWeekNumber(date) {
+            const d = new Date(Date.UTC(date.getFullYear(), date.getMonth(), date.getDate()));
+            const dayNum = d.getUTCDay() || 7;
+            d.setUTCDate(d.getUTCDate() + 4 - dayNum);
+            const yearStart = new Date(Date.UTC(d.getUTCFullYear(), 0, 1));
+            return Math.ceil((((d - yearStart) / 86400000) + 1) / 7);
+        }
+
+        function showPage(ev, page) {
+            document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+            document.querySelectorAll('.nav-buttons button').forEach(b => b.classList.remove('active'));
+
+            document.getElementById(page + 'Page').classList.add('active');
+            if (ev && ev.target) ev.target.classList.add('active');
+
+            if (page === 'history') loadHistory();
+        }
+
+        function loadHistory() {
+            const filterTipo = document.getElementById('filterTipo').value;
+            const filterPeriodo = document.getElementById('filterPeriodo').value;
+            const now = new Date();
+
+            let filtered = transactions.filter(t => {
+                if (filterTipo !== 'tutti' && t.tipo !== filterTipo) return false;
+
+                const transDate = new Date(t.data);
+                if (filterPeriodo === 'settimana') {
+                    return getWeekNumber(transDate) === getWeekNumber(now) && transDate.getFullYear() === now.getFullYear();
+                }
+                if (filterPeriodo === 'mese') {
+                    return transDate.getMonth() === now.getMonth() && transDate.getFullYear() === now.getFullYear();
+                }
+                return true;
+            });
+
+            filtered.sort((a, b) => new Date(b.data) - new Date(a.data));
+
+            const historyList = document.getElementById('historyList');
+            historyList.innerHTML = '';
+
+            filtered.forEach(t => {
+                const div = document.createElement('div');
+                div.className = `transaction-item ${t.tipo}`;
+                div.innerHTML = `
+                    <div class="transaction-info">
+                        <strong>${t.descrizione}</strong> - ${t.categoria}<br>
+                        <small>${new Date(t.data).toLocaleString('it-IT')}</small>
+                    </div>
+                    <div class="transaction-amount ${t.tipo}">
+                        ${t.tipo === 'entrata' ? '+' : '-'}€${t.importo.toFixed(2)}
+                    </div>
+                    <button class="delete-btn" onclick="deleteTransaction('${t.id}')">✕</button>
+                `;
+                historyList.appendChild(div);
+            });
+        }
+
+        async function deleteTransaction(id) {
+            if (confirm('Sei sicuro di voler eliminare questa transazione?')) {
+                await database.ref('transactions/' + currentUser.uid + '/' + id).remove();
+            }
+        }
+
+        // ----- SALVADANAIO -----
+
+        function loadPiggybank() {
+            const totalRef = database.ref('piggybank/' + currentUser.uid + '/total');
+            const movementsRef = database.ref('piggybank/' + currentUser.uid + '/movements');
+
+            totalRef.off();
+            movementsRef.off();
+
+            totalRef.on('value', (snapshot) => {
+                const val = snapshot.val();
+                piggyTotal = val ? Number(val) : 0;
+                document.getElementById('salvadanaioTotale').textContent = `€${piggyTotal.toFixed(2)}`;
+                document.getElementById('salvadanaioTotaleSettings').textContent = `€${piggyTotal.toFixed(2)}`;
+            });
+
+            movementsRef.on('value', (snapshot) => {
+                piggyMovements = [];
+                snapshot.forEach(child => {
+                    piggyMovements.push({ id: child.key, ...child.val() });
+                });
+                renderPiggyHistory();
+            });
+        }
+
+        function renderPiggyHistory() {
+            const list = document.getElementById('piggyHistoryList');
+            list.innerHTML = '';
+
+            const sorted = [...piggyMovements].sort((a, b) => new Date(b.data) - new Date(a.data));
+
+            sorted.forEach(m => {
+                const div = document.createElement('div');
+                const tipoClass = m.tipo === 'deposito' ? 'entrata' : 'uscita';
+                const segno = m.tipo === 'deposito' ? '+' : '-';
+                div.className = `transaction-item ${tipoClass}`;
+                div.innerHTML = `
+                    <div class="transaction-info">
+                        <strong>${m.tipo === 'deposito' ? 'Deposito' : 'Prelievo'}</strong>${m.descrizione ? ' - ' + m.descrizione : ''}<br>
+                        <small>${new Date(m.data).toLocaleString('it-IT')}</small>
+                    </div>
+                    <div class="transaction-amount ${tipoClass}">
+                        ${segno}€${Number(m.importo).toFixed(2)}
+                    </div>
+                `;
+                list.appendChild(div);
+            });
+        }
+
+        async function addPiggyMovement() {
+            const importoInput = document.getElementById('piggyImporto');
+            const tipoSelect = document.getElementById('piggyTipo');
+            const descInput = document.getElementById('piggyDescrizione');
+
+            const importo = parseFloat(importoInput.value);
+            const tipo = tipoSelect.value;
+            const descrizione = descInput.value || '';
+
+            if (isNaN(importo) || importo <= 0) {
+                alert('Inserisci un importo valido per il salvadanaio.');
+                return;
+            }
+
+            let nuovoTotale = piggyTotal;
+            if (tipo === 'deposito') {
+                nuovoTotale += importo;
+            } else {
+                nuovoTotale -= importo;
+            }
+
+            const baseRef = database.ref('piggybank/' + currentUser.uid);
+
+            const movement = {
+                importo,
+                tipo,
+                descrizione,
+                data: new Date().toISOString()
+            };
+
+            await baseRef.child('total').set(nuovoTotale);
+            await baseRef.child('movements').push(movement);
+
+            importoInput.value = '';
+            descInput.value = '';
+        }
+
+        // ----- BACKUP -----
+
+        function downloadBackup() {
+            const data = {
+                transactions,
+                piggybank: {
+                    total: piggyTotal,
+                    movements: piggyMovements
+                }
+            };
+            const json = JSON.stringify(data, null, 2);
+            const blob = new Blob([json], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `budget-backup-${new Date().toISOString().split('T')[0]}.json`;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+        }
+    </script>
+</body>
+</html>
