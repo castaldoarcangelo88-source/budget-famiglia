@@ -81,6 +81,17 @@
             .form-row {flex-direction: column;}
             .form-row input, .form-row select {width: 100%;}
         }
+        
+        /* Tabella Cassa stile Excel */
+        .tabella-cassa {width: 100%; border-collapse: collapse; font-size: 0.9rem; margin-top: 15px;}
+        .tabella-cassa th, .tabella-cassa td {border: 1px solid #444; padding: 8px; text-align: left;}
+        .tabella-cassa thead th {background: #FFD700; color: #000; font-weight: bold; position: sticky; top: 0;}
+        .tabella-cassa tbody tr:nth-child(even) {background: rgba(255,255,255,0.03);}
+        .tabella-cassa td.entrata {color: #4CAF50; font-weight: 600;}
+        .tabella-cassa td.uscita {color: #f44336; font-weight: 600;}
+        .tabella-cassa td.saldo {background: rgba(76,175,80,0.15); font-weight: 600;}
+        .totali-cassa {display: flex; gap: 15px; margin-bottom: 15px; flex-wrap: wrap;}
+        .totali-cassa > div {flex: 1; min-width: 120px; background: rgba(255,255,255,0.1); padding: 10px; border-radius: 8px; text-align: center;}
     </style>
 </head>
 <body>
@@ -111,6 +122,7 @@
             <div class="nav-buttons">
                 <button class="active" onclick="showPage(event, 'main')">Principale</button>
                 <button onclick="showPage(event, 'history')">Ultimi Movimenti</button>
+                            <button onclick="showPage(event, 'cassa')">Cassa</button>
                 <button onclick="showPage(event, 'settings')">Impostazioni</button>
             </div>
 
@@ -164,6 +176,30 @@
                 </div>
                 <div id="historyList"></div>
             </div>
+
+                    <!-- Cassa Page -->
+        <div id="cassaPage" class="page">
+            <div class="totali-cassa">
+                <div><h4>Tot. Entrate</h4><p id="cassaTotEntrate">€0.00</p></div>
+                <div><h4>Tot. Uscite</h4><p id="cassaTotUscite">€0.00</p></div>
+                <div><h4>Saldo Finale</h4><p id="cassaSaldoFinale">€0.00</p></div>
+            </div>
+            <div style="max-height: 500px; overflow-y: auto;">
+                <table class="tabella-cassa">
+                    <thead>
+                        <tr>
+                            <th>Data</th>
+                            <th>Descrizione</th>
+                            <th>Entrata</th>
+                            <th>Uscita</th>
+                            <th>Saldo</th>
+                        </tr>
+                    </thead>
+                    <tbody id="cassaTableBody">
+                    </tbody>
+                </table>
+            </div>
+        </div>
 
             <!-- Settings Page -->
             <div id="settingsPage" class="page">
@@ -374,6 +410,7 @@
             if (ev && ev.target) ev.target.classList.add('active');
 
             if (page === 'history') loadHistory();
+                    if (page === 'cassa') loadCassa();
         }
 
         function loadHistory() {
@@ -529,6 +566,38 @@
             document.body.removeChild(a);
             URL.revokeObjectURL(url);
         }
+
+                // ----- CASSA -----
+    function loadCassa() {
+        const sorted = [...transactions].sort((a, b) => new Date(a.data) - new Date(b.data));
+        const tbody = document.getElementById('cassaTableBody');
+        tbody.innerHTML = '';
+        
+        let saldo = 0;
+        let totEntrate = 0;
+        let totUscite = 0;
+        
+        sorted.forEach(t => {
+            const importo = t.tipo === 'entrata' ? t.importo : -t.importo;
+            saldo += importo;
+            if (t.tipo === 'entrata') totEntrate += t.importo;
+            else totUscite += t.importo;
+            
+            const tr = document.createElement('tr');
+            tr.innerHTML = `
+                <td>${new Date(t.data).toLocaleDateString('it-IT')}</td>
+                <td>${t.descrizione}</td>
+                <td class="entrata">${t.tipo === 'entrata' ? '€' + t.importo.toFixed(2) : ''}</td>
+                <td class="uscita">${t.tipo === 'uscita' ? '€' + t.importo.toFixed(2) : ''}</td>
+                <td class="saldo">€${saldo.toFixed(2)}</td>
+            `;
+            tbody.appendChild(tr);
+        });
+        
+        document.getElementById('cassaTotEntrate').textContent = '€' + totEntrate.toFixed(2);
+        document.getElementById('cassaTotUscite').textContent = '€' + totUscite.toFixed(2);
+        document.getElementById('cassaSaldoFinale').textContent = '€' + saldo.toFixed(2);
+    }
     </script>
 </body>
 </html>
