@@ -90,6 +90,8 @@
         .tabella-cassa td.entrata {color: #4CAF50; font-weight: 600;}
         .tabella-cassa td.uscita {color: #f44336; font-weight: 600;}
         .tabella-cassa td.saldo {background: rgba(76,175,80,0.15); font-weight: 600;}
+        .tabella-cassa tbody tr:hover {background: rgba(255,255,255,0.08); cursor: pointer;}
+
         .totali-cassa {display: flex; gap: 15px; margin-bottom: 15px; flex-wrap: wrap;}
         .totali-cassa > div {flex: 1; min-width: 120px; background: rgba(255,255,255,0.1); padding: 10px; border-radius: 8px; text-align: center;}
     </style>
@@ -122,7 +124,7 @@
             <div class="nav-buttons">
                 <button class="active" onclick="showPage(event, 'main')">Principale</button>
                 <button onclick="showPage(event, 'history')">Ultimi Movimenti</button>
-                            <button onclick="showPage(event, 'cassa')">Cassa</button>
+                <button onclick="showPage(event, 'cassa')">Cassa</button>
                 <button onclick="showPage(event, 'settings')">Impostazioni</button>
             </div>
 
@@ -177,29 +179,56 @@
                 <div id="historyList"></div>
             </div>
 
-                    <!-- Cassa Page -->
-        <div id="cassaPage" class="page">
-            <div class="totali-cassa">
-                <div><h4>Tot. Entrate</h4><p id="cassaTotEntrate">€0.00</p></div>
-                <div><h4>Tot. Uscite</h4><p id="cassaTotUscite">€0.00</p></div>
-                <div><h4>Saldo Finale</h4><p id="cassaSaldoFinale">€0.00</p></div>
-            </div>
-            <div style="max-height: 500px; overflow-y: auto;">
-                <table class="tabella-cassa">
+            <!-- Cassa Page -->
+            <div id="cassaPage" class="page">
+                <!-- Riepilogo mensile -->
+                <h4>Riepilogo mensile</h4>
+                <table class="tabella-cassa" style="margin-bottom:15px;">
                     <thead>
                         <tr>
-                            <th>Data</th>
-                            <th>Descrizione</th>
-                            <th>Entrata</th>
-                            <th>Uscita</th>
-                            <th>Saldo</th>
+                            <th>Mese</th>
+                            <th>Entrate</th>
+                            <th>Uscite</th>
+                            <th>Saldo mese</th>
                         </tr>
                     </thead>
-                    <tbody id="cassaTableBody">
+                    <tbody id="riepilogoMensileBody">
                     </tbody>
                 </table>
+
+                <!-- Filtro mese Cassa -->
+                <div class="filters" style="margin-bottom:10px;">
+                    <select id="cassaMese" onchange="loadCassa()">
+                        <option value="tutti">Tutti i mesi</option>
+                        <!-- verrà comunque usato il valore YYYY-MM -->
+                        <option value="2025-12">Dicembre 2025</option>
+                        <option value="2026-01">Gennaio 2026</option>
+                        <option value="2026-02">Febbraio 2026</option>
+                        <option value="2026-03">Marzo 2026</option>
+                    </select>
+                </div>
+
+                <div class="totali-cassa">
+                    <div><h4>Tot. Entrate</h4><p id="cassaTotEntrate">€0.00</p></div>
+                    <div><h4>Tot. Uscite</h4><p id="cassaTotUscite">€0.00</p></div>
+                    <div><h4>Saldo Finale</h4><p id="cassaSaldoFinale">€0.00</p></div>
+                </div>
+                <div style="max-height: 500px; overflow-y: auto;">
+                    <table class="tabella-cassa">
+                        <thead>
+                            <tr>
+                                <th>Data</th>
+                                <th>Descrizione</th>
+                                <th>Entrata</th>
+                                <th>Uscita</th>
+                                <th>Saldo</th>
+                            </tr>
+                        </thead>
+                        <tbody id="cassaTableBody">
+                        </tbody>
+                    </table>
+                </div>
             </div>
-        </div>
 
             <!-- Settings Page -->
             <div id="settingsPage" class="page">
@@ -321,7 +350,7 @@
 
         function loadTransactions() {
             const userRef = database.ref('transactions/' + currentUser.uid);
-            userRef.off(); // evita doppio binding
+            userRef.off();
             userRef.on('value', (snapshot) => {
                 transactions = [];
                 snapshot.forEach((childSnapshot) => {
@@ -329,6 +358,8 @@
                 });
                 updateStatistics();
                 loadHistory();
+                loadCassa();
+                buildMonthlySummary();
             });
         }
 
@@ -390,7 +421,6 @@
             document.getElementById('usciteSettimana').textContent = `€${usciteSettimana.toFixed(2)}`;
             document.getElementById('bilancioSettimana').textContent = `€${(entrateSettimana - usciteSettimana).toFixed(2)}`;
 
-            // aggiorna card salvadanaio sulla main page se già caricato
             document.getElementById('salvadanaioTotale').textContent = `€${piggyTotal.toFixed(2)}`;
         }
 
@@ -410,7 +440,10 @@
             if (ev && ev.target) ev.target.classList.add('active');
 
             if (page === 'history') loadHistory();
-                    if (page === 'cassa') loadCassa();
+            if (page === 'cassa') {
+                loadCassa();
+                buildMonthlySummary();
+            }
         }
 
         function loadHistory() {
@@ -567,37 +600,104 @@
             URL.revokeObjectURL(url);
         }
 
-                // ----- CASSA -----
-    function loadCassa() {
-        const sorted = [...transactions].sort((a, b) => new Date(a.data) - new Date(b.data));
-        const tbody = document.getElementById('cassaTableBody');
-        tbody.innerHTML = '';
-        
-        let saldo = 0;
-        let totEntrate = 0;
-        let totUscite = 0;
-        
-        sorted.forEach(t => {
-            const importo = t.tipo === 'entrata' ? t.importo : -t.importo;
-            saldo += importo;
-            if (t.tipo === 'entrata') totEntrate += t.importo;
-            else totUscite += t.importo;
+        // ----- CASSA -----
+
+        function loadCassa() {
+            const sorted = [...transactions].sort((a, b) => new Date(a.data) - new Date(b.data));
+            const tbody = document.getElementById('cassaTableBody');
+            const filtroMeseSelect = document.getElementById('cassaMese');
+            const filtroMese = filtroMeseSelect ? filtroMeseSelect.value : 'tutti';
+
+            tbody.innerHTML = '';
             
-            const tr = document.createElement('tr');
-            tr.innerHTML = `
-                <td>${new Date(t.data).toLocaleDateString('it-IT')}</td>
-                <td>${t.descrizione}</td>
-                <td class="entrata">${t.tipo === 'entrata' ? '€' + t.importo.toFixed(2) : ''}</td>
-                <td class="uscita">${t.tipo === 'uscita' ? '€' + t.importo.toFixed(2) : ''}</td>
-                <td class="saldo">€${saldo.toFixed(2)}</td>
-            `;
-            tbody.appendChild(tr);
-        });
-        
-        document.getElementById('cassaTotEntrate').textContent = '€' + totEntrate.toFixed(2);
-        document.getElementById('cassaTotUscite').textContent = '€' + totUscite.toFixed(2);
-        document.getElementById('cassaSaldoFinale').textContent = '€' + saldo.toFixed(2);
-    }
+            let saldo = 0;
+            let totEntrate = 0;
+            let totUscite = 0;
+            
+            sorted.forEach(t => {
+                const d = new Date(t.data);
+                const year = d.getFullYear();
+                const month = (d.getMonth() + 1).toString().padStart(2, '0');
+                const key = `${year}-${month}`;
+
+                if (filtroMese !== 'tutti' && key !== filtroMese) {
+                    return;
+                }
+
+                const importo = t.tipo === 'entrata' ? t.importo : -t.importo;
+                saldo += importo;
+                if (t.tipo === 'entrata') totEntrate += t.importo;
+                else totUscite += t.importo;
+                
+                const tr = document.createElement('tr');
+                tr.innerHTML = `
+                    <td>${d.toLocaleDateString('it-IT')}</td>
+                    <td>${t.descrizione}</td>
+                    <td class="entrata">${t.tipo === 'entrata' ? '€' + t.importo.toFixed(2) : ''}</td>
+                    <td class="uscita">${t.tipo === 'uscita' ? '€' + t.importo.toFixed(2) : ''}</td>
+                    <td class="saldo">€${saldo.toFixed(2)}</td>
+                `;
+                tbody.appendChild(tr);
+            });
+            
+            document.getElementById('cassaTotEntrate').textContent = '€' + totEntrate.toFixed(2);
+            document.getElementById('cassaTotUscite').textContent = '€' + totUscite.toFixed(2);
+            document.getElementById('cassaSaldoFinale').textContent = '€' + saldo.toFixed(2);
+        }
+
+        // ----- RIEPILOGO MENSILE -----
+
+        function buildMonthlySummary() {
+            const map = {}; // key: YYYY-MM, value: {entrate, uscite}
+
+            transactions.forEach(t => {
+                const d = new Date(t.data);
+                const year = d.getFullYear();
+                const month = (d.getMonth() + 1).toString().padStart(2, '0');
+                const key = `${year}-${month}`;
+
+                if (!map[key]) {
+                    map[key] = { entrate: 0, uscite: 0 };
+                }
+                if (t.tipo === 'entrata') {
+                    map[key].entrate += t.importo;
+                } else {
+                    map[key].uscite += t.importo;
+                }
+            });
+
+            const tbody = document.getElementById('riepilogoMensileBody');
+            if (!tbody) return;
+            tbody.innerHTML = '';
+
+            const keys = Object.keys(map).sort(); // ordinato per data
+
+            keys.forEach(key => {
+                const { entrate, uscite } = map[key];
+                const saldoMese = entrate - uscite;
+
+                const [y, m] = key.split('-');
+                const dataFake = new Date(Number(y), Number(m) - 1, 1);
+                const nomeMese = dataFake.toLocaleDateString('it-IT', { month: 'long', year: 'numeric' });
+
+                const tr = document.createElement('tr');
+                tr.dataset.meseKey = key;
+                tr.innerHTML = `
+                    <td>${nomeMese}</td>
+                    <td class="entrata">€${entrate.toFixed(2)}</td>
+                    <td class="uscita">€${uscite.toFixed(2)}</td>
+                    <td class="saldo">€${saldoMese.toFixed(2)}</td>
+                `;
+                tr.addEventListener('click', () => {
+                    const select = document.getElementById('cassaMese');
+                    if (select) {
+                        select.value = key;
+                    }
+                    loadCassa();
+                });
+                tbody.appendChild(tr);
+            });
+        }
     </script>
 </body>
 </html>
