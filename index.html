@@ -99,7 +99,6 @@
 </head>
 <body>
     <div class="container">
-        <!-- Login Screen -->
         <div id="loginScreen">
             <h1>💰 Budget Famiglia</h1>
             <div class="login-box">
@@ -113,7 +112,6 @@
             </div>
         </div>
 
-        <!-- Main App -->
         <div id="mainApp">
             <h1>💰 Budget Famiglia</h1>
             <div class="user-info">
@@ -121,7 +119,6 @@
                 <button onclick="logout()">Esci</button>
             </div>
 
-            <!-- Navigation -->
             <div class="nav-buttons">
                 <button class="active" onclick="showPage(event, 'main')">Principale</button>
                 <button onclick="showPage(event, 'history')">Ultimi Movimenti</button>
@@ -129,7 +126,6 @@
                 <button onclick="showPage(event, 'settings')">Impostazioni</button>
             </div>
 
-            <!-- Main Page -->
             <div id="mainPage" class="page active">
                 <div class="form-row">
                     <input type="text" id="descrizione" placeholder="Descrizione">
@@ -163,7 +159,6 @@
                 </div>
             </div>
 
-            <!-- History Page -->
             <div id="historyPage" class="page">
                 <div class="filters">
                     <select id="filterTipo" onchange="loadHistory()">
@@ -180,10 +175,8 @@
                 <div id="historyList"></div>
             </div>
 
-            <!-- Cassa Page -->
             <div id="cassaPage" class="page">
                 <h4>Riepilogo mensile</h4>
-
                 <div class="filters" style="margin-bottom:10px;">
                     <label>Mostra ultimi</label>
                     <select id="riepilogoNumMesi" onchange="buildMonthlySummary()">
@@ -193,7 +186,6 @@
                         <option value="12">Tutti</option>
                     </select>
                 </div>
-
                 <table class="tabella-cassa" style="margin-bottom:15px;">
                     <thead>
                         <tr>
@@ -203,17 +195,14 @@
                             <th>Saldo mese</th>
                         </tr>
                     </thead>
-                    <tbody id="riepilogoMensileBody">
-                    </tbody>
+                    <tbody id="riepilogoMensileBody"></tbody>
                 </table>
-
                 <div class="filters" style="margin-bottom:10px;">
                     <label>Filtra movimenti per mese</label>
                     <select id="cassaMese" onchange="loadCassa()">
                         <option value="tutti">Tutti i mesi</option>
                     </select>
                 </div>
-
                 <div class="totali-cassa">
                     <div><h4>Tot. Entrate</h4><p id="cassaTotEntrate">€0.00</p></div>
                     <div><h4>Tot. Uscite</h4><p id="cassaTotUscite">€0.00</p></div>
@@ -230,19 +219,15 @@
                                 <th>Saldo</th>
                             </tr>
                         </thead>
-                        <tbody id="cassaTableBody">
-                        </tbody>
+                        <tbody id="cassaTableBody"></tbody>
                     </table>
                 </div>
             </div>
 
-            <!-- Settings Page -->
             <div id="settingsPage" class="page">
                 <div class="stat-card" style="margin-bottom: 15px;">
                     <h3>Salvadanaio</h3>
-                    <p style="font-size: 14px; margin: 10px 0;">
-                        Gestisci i depositi e i prelievi dal salvadanaio. Il totale è condiviso su tutti i dispositivi collegati a questo account.
-                    </p>
+                    <p style="font-size: 14px; margin: 10px 0;">Gestisci i depositi e i prelievi dal salvadanaio.</p>
                     <div class="form-row">
                         <input type="number" id="piggyImporto" placeholder="Importo (€)" step="0.01">
                         <select id="piggyTipo">
@@ -256,89 +241,71 @@
                     <div class="form-row">
                         <button class="btn" onclick="addPiggyMovement()">Aggiorna Salvadanaio</button>
                     </div>
-                    <p style="font-size: 14px; margin-top: 10px;">
-                        Totale salvadanaio attuale: <strong id="salvadanaioTotaleSettings">€0.00</strong>
-                    </p>
+                    <p style="font-size: 14px; margin-top: 10px;">Totale attuale: <strong id="salvadanaioTotaleSettings">€0.00</strong></p>
                 </div>
-
                 <div class="stat-card" style="margin-bottom: 15px;">
                     <h3>Movimenti Salvadanaio</h3>
-                      </p>
-    </div>
-</div>
-
-<script>
-    const STORAGE_KEY = 'budgetFamigliaUser';
-
-    function showError(message) {
-        const box = document.getElementById('loginError');
-        if (box) {
-            box.textContent = message;
-            box.style.display = message ? 'block' : 'none';
-        }
-    }
-
-    function login() {
-        const email = document.getElementById('loginEmail').value.trim();
-        const password = document.getElementById('loginPassword').value.trim();
-        if (!email || !password) { showError('Inserisci email e password'); return; }
-        const raw = localStorage.getItem(STORAGE_KEY);
-        if (!raw) { showError('Nessun utente registrato'); return; }
-        const user = JSON.parse(raw);
-        if (user.email !== email || user.password !== password) { showError('Credenziali non valide'); return; }
-        showError('');
-        openApp(user);
-    }
-
-    function register() {
-        const email = document.getElementById('loginEmail').value.trim();
-        const password = document.getElementById('loginPassword').value.trim();
-        if (!email || !password) { showError('Inserisci email e password'); return; }
-        const user = { email, password };
-        localStorage.setItem(STORAGE_KEY, JSON.stringify(user));
-        showError('Registrazione completata, ora puoi accedere');
-    }
-
-    function openApp(user) {
-        document.getElementById('userEmail').textContent = user.email;
-        document.getElementById('loginScreen').style.display = 'none';
-        document.getElementById('mainApp').style.display = 'block';
-    }
-
-    function logout() {
-        document.getElementById('mainApp').style.display = 'none';
-        document.getElementById('loginScreen').style.display = 'flex';
-        document.getElementById('loginPassword').value = '';
-    }
-
-    window.addEventListener('DOMContentLoaded', () => {
-        const raw = localStorage.getItem(STORAGE_KEY);
-        if (raw) {
-            const user = JSON.parse(raw);
-            document.getElementById('loginEmail').value = user.email;
-        }
-    });
-
-    function showPage(evt, page) {
-        const pages = document.querySelectorAll('.page');
-        pages.forEach(p => p.classList.remove('active'));
-        document.getElementById(page + 'Page').classList.add('active');
-        const buttons = document.querySelectorAll('.nav-buttons button');
-        buttons.forEach(b => b.classList.remove('active'));
-        if (evt && evt.target) evt.target.classList.add('active');
-    }
-
-    // Stub per le altre funzioni
-    function addTransaction() {}
-    function loadHistory() {}
-    function loadCassa() {}
-    function buildMonthlySummary() {}
-    function addPiggyMovement() {}
-</script>
-</body>
-</html>      <div id="piggyHistoryList"></div>
+                    <div id="piggyHistoryList"></div>
                 </div>
-
                 <div class="stat-card">
                     <h3>Backup e Ripristino</h3>
-                    
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const STORAGE_KEY = 'budgetFamigliaUser';
+        function showError(message) {
+            const box = document.getElementById('loginError');
+            if (box) {
+                box.textContent = message;
+                box.style.display = message ? 'block' : 'none';
+            }
+        }
+        function login() {
+            const email = document.getElementById('loginEmail').value.trim();
+            const password = document.getElementById('loginPassword').value.trim();
+            if (!email || !password) { showError('Inserisci email e password'); return; }
+            const raw = localStorage.getItem(STORAGE_KEY);
+            if (!raw) { showError('Nessun utente registrato'); return; }
+            const user = JSON.parse(raw);
+            if (user.email !== email || user.password !== password) { showError('Credenziali non valide'); return; }
+            showError('');
+            openApp(user);
+        }
+        function register() {
+            const email = document.getElementById('loginEmail').value.trim();
+            const password = document.getElementById('loginPassword').value.trim();
+            if (!email || !password) { showError('Inserisci email e password'); return; }
+            localStorage.setItem(STORAGE_KEY, JSON.stringify({ email, password }));
+            showError('Registrazione completata, ora puoi accedere');
+        }
+        function openApp(user) {
+            document.getElementById('userEmail').textContent = user.email;
+            document.getElementById('loginScreen').style.display = 'none';
+            document.getElementById('mainApp').style.display = 'block';
+        }
+        function logout() {
+            document.getElementById('mainApp').style.display = 'none';
+            document.getElementById('loginScreen').style.display = 'flex';
+            document.getElementById('loginPassword').value = '';
+        }
+        function showPage(evt, page) {
+            document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+            document.getElementById(page + 'Page').classList.add('active');
+            document.querySelectorAll('.nav-buttons button').forEach(b => b.classList.remove('active'));
+            if (evt && evt.target) evt.target.classList.add('active');
+        }
+        function addTransaction() {}
+        function loadHistory() {}
+        function loadCassa() {}
+        function buildMonthlySummary() {}
+        function addPiggyMovement() {}
+        window.onload = () => {
+            const raw = localStorage.getItem(STORAGE_KEY);
+            if (raw) document.getElementById('loginEmail').value = JSON.parse(raw).email;
+        }
+    </script>
+</body>
+</html>
