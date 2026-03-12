@@ -15,6 +15,7 @@
         .container {
             background: rgba(20, 20, 30, 0.95); border-radius: 15px; padding: 15px;
             max-width: 600px; width: 100%; box-shadow: 0 10px 50px rgba(0,0,0,0.3); color: white;
+        region {display: block; width: 100%;}
         }
         #loginScreen {display: flex; flex-direction: column; gap: 20px;}
         #mainApp {display: none;}
@@ -82,8 +83,6 @@
             .form-row {flex-direction: column;}
             .form-row input, .form-row select {width: 100%;}
         }
-        
-        /* Tabella Cassa stile Excel */
         .tabella-cassa {width: 100%; border-collapse: collapse; font-size: 0.9rem; margin-top: 15px;}
         .tabella-cassa th, .tabella-cassa td {border: 1px solid #444; padding: 8px; text-align: left;}
         .tabella-cassa thead th {background: #FFD700; color: #000; font-weight: bold; position: sticky; top: 0;}
@@ -92,7 +91,6 @@
         .tabella-cassa td.uscita {color: #f44336; font-weight: 600;}
         .tabella-cassa td.saldo {background: rgba(76,175,80,0.15); font-weight: 600;}
         .tabella-cassa tbody tr:hover {background: rgba(255,255,255,0.08); cursor: pointer;}
-
         .totali-cassa {display: flex; gap: 15px; margin-bottom: 15px; flex-wrap: wrap;}
         .totali-cassa > div {flex: 1; min-width: 120px; background: rgba(255,255,255,0.1); padding: 10px; border-radius: 8px; text-align: center;}
     </style>
@@ -104,8 +102,8 @@
             <div class="login-box">
                 <h2>Accesso</h2>
                 <div id="loginError" class="error-message"></div>
-                <input type="email" id="loginEmail" placeholder="Email" onkeypress="if(event.key==='Enter')login()">
-                <input type="password" id="loginPassword" placeholder="Password" onkeypress="if(event.key==='Enter')login()">
+                <input type="email" id="loginEmail" placeholder="Email">
+                <input type="password" id="loginPassword" placeholder="Password">
                 <button class="btn" onclick="login()">Accedi</button>
                 <p style="margin-top: 15px; font-size: 14px;">Non hai un account?</p>
                 <button class="btn" onclick="register()" style="background: rgba(255,255,255,0.2);">Registrati</button>
@@ -118,7 +116,6 @@
                 <span id="userEmail"></span>
                 <button onclick="logout()">Esci</button>
             </div>
-
             <div class="nav-buttons">
                 <button class="active" onclick="showPage(event, 'main')">Principale</button>
                 <button onclick="showPage(event, 'history')">Ultimi Movimenti</button>
@@ -152,9 +149,6 @@
                     <div class="stat-card"><h3>Entrate Mese</h3><p id="entrateMese">€0.00</p></div>
                     <div class="stat-card"><h3>Uscite Mese</h3><p id="usciteMese">€0.00</p></div>
                     <div class="stat-card"><h3>Bilancio</h3><p id="bilancio">€0.00</p></div>
-                    <div class="stat-card"><h3>Entrate Settimana</h3><p id="entrateSettimana">€0.00</p></div>
-                    <div class="stat-card"><h3>Uscite Settimana</h3><p id="usciteSettimana">€0.00</p></div>
-                    <div class="stat-card"><h3>Bilancio Settimana</h3><p id="bilancioSettimana">€0.00</p></div>
                     <div class="stat-card"><h3>Salvadanaio</h3><p id="salvadanaioTotale">€0.00</p></div>
                 </div>
             </div>
@@ -177,47 +171,24 @@
 
             <div id="cassaPage" class="page">
                 <h4>Riepilogo mensile</h4>
-                <div class="filters" style="margin-bottom:10px;">
-                    <label>Mostra ultimi</label>
-                    <select id="riepilogoNumMesi" onchange="buildMonthlySummary()">
-                        <option value="2" selected>2 mesi</option>
-                        <option value="3">3 mesi</option>
-                        <option value="4">4 mesi</option>
-                        <option value="12">Tutti</option>
-                    </select>
-                </div>
-                <table class="tabella-cassa" style="margin-bottom:15px;">
-                    <thead>
-                        <tr>
-                            <th>Mese</th>
-                            <th>Entrate</th>
-                            <th>Uscite</th>
-                            <th>Saldo mese</th>
-                        </tr>
-                    </thead>
-                    <tbody id="riepilogoMensileBody"></tbody>
-                </table>
-                <div class="filters" style="margin-bottom:10px;">
-                    <label>Filtra movimenti per mese</label>
-                    <select id="cassaMese" onchange="loadCassa()">
-                        <option value="tutti">Tutti i mesi</option>
-                    </select>
-                </div>
-                <div class="totali-cassa">
-                    <div><h4>Tot. Entrate</h4><p id="cassaTotEntrate">€0.00</p></div>
-                    <div><h4>Tot. Uscite</h4><p id="cassaTotUscite">€0.00</p></div>
-                    <div><h4>Saldo Finale</h4><p id="cassaSaldoFinale">€0.00</p></div>
-                </div>
-                <div style="max-height: 500px; overflow-y: auto;">
+                <div id="monthlySummaryTableContainer">
                     <table class="tabella-cassa">
                         <thead>
-                            <tr>
-                                <th>Data</th>
-                                <th>Descrizione</th>
-                                <th>Entrata</th>
-                                <th>Uscita</th>
-                                <th>Saldo</th>
-                            </tr>
+                            <tr><th>Mese</th><th>Entrate</th><th>Uscite</th><th>Saldo</th></tr>
+                        </thead>
+                        <tbody id="riepilogoMensileBody"></tbody>
+                    </table>
+                </div>
+                <h4 style="margin-top:20px">Dettaglio Cassa</h4>
+                <div class="totali-cassa" style="margin-top:10px">
+                    <div><h4>Entrate</h4><p id="cassaTotEntrate">€0.00</p></div>
+                    <div><h4>Uscite</h4><p id="cassaTotUscite">€0.00</p></div>
+                    <div><h4>Saldo</h4><p id="cassaSaldoFinale">€0.00</p></div>
+                </div>
+                <div style="max-height: 400px; overflow-y: auto;">
+                    <table class="tabella-cassa">
+                        <thead>
+                            <tr><th>Data</th><th>Descrizione</th><th>Entrata</th><th>Uscita</th><th>Saldo</th><th></th></tr>
                         </thead>
                         <tbody id="cassaTableBody"></tbody>
                     </table>
@@ -227,7 +198,6 @@
             <div id="settingsPage" class="page">
                 <div class="stat-card" style="margin-bottom: 15px;">
                     <h3>Salvadanaio</h3>
-                    <p style="font-size: 14px; margin: 10px 0;">Gestisci i depositi e i prelievi dal salvadanaio.</p>
                     <div class="form-row">
                         <input type="number" id="piggyImporto" placeholder="Importo (€)" step="0.01">
                         <select id="piggyTipo">
@@ -236,220 +206,221 @@
                         </select>
                     </div>
                     <div class="form-row">
-                        <input type="text" id="piggyDescrizione" placeholder="Descrizione (opzionale)">
+                        <input type="text" id="piggyDescrizione" placeholder="Descrizione">
+                        <button class="btn" onclick="addPiggyMovement()">Aggiorna</button>
                     </div>
-                    <div class="form-row">
-                        <button class="btn" onclick="addPiggyMovement()">Aggiorna Salvadanaio</button>
-                    </div>
-                    <p style="font-size: 14px; margin-top: 10px;">Totale attuale: <strong id="salvadanaioTotaleSettings">€0.00</strong></p>
-                </div>
-                <div class="stat-card" style="margin-bottom: 15px;">
-                    <h3>Movimenti Salvadanaio</h3>
-                    <div id="piggyHistoryList"></div>
+                    <p>Totale: <strong id="salvadanaioTotaleSettings">€0.00</strong></p>
                 </div>
                 <div class="stat-card">
                     <h3>Backup e Ripristino</h3>
+                    <p style="font-size:12px; margin-bottom:10px;">Esporta i tuoi dati in JSON o ripristina da un backup precedente.</p>
+                    <div class="form-row">
+                        <button class="btn" onclick="exportData()" style="background:#2196F3; color:white;">Esporta JSON</button>
+                        <button class="btn" onclick="document.getElementById('importFile').click()" style="background:#4CAF50; color:white;">Importa JSON</button>
+                        <input type="file" id="importFile" style="display:none" onchange="importData(event)">
+                    </div>
                 </div>
             </div>
         </div>
     </div>
 
-<script type="module">
-  import { 
-    auth, 
-    db,
-    createUserWithEmailAndPassword,
-    signInWithEmailAndPassword,
-    signOut,
-    onAuthStateChanged,
-    ref,
-    push,
-    set,
-    get,
-    child,
-    onValue
-  } from "./firebase.js";
+    <script type="module">
+        import { auth, db, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut, onAuthStateChanged, ref, push, set, get, child, onValue, remove } from "./firebase.js";
 
-  const loginErrorBox = document.getElementById('loginError');
-  const loginScreen = document.getElementById('loginScreen');
-  const mainApp = document.getElementById('mainApp');
-  const userEmailSpan = document.getElementById('userEmail');
+        const loginErrorBox = document.getElementById('loginError');
+        const loginScreen = document.getElementById('loginScreen');
+        const mainApp = document.getElementById('mainApp');
+        const userEmailSpan = document.getElementById('userEmail');
 
-  function showError(message) {
-    if (!loginErrorBox) return;
-    loginErrorBox.textContent = message || '';
-    loginErrorBox.style.display = message ? 'block' : 'none';
-  }
-
-  // LOGIN con Firebase Auth
-  async function login() {
-    const email = document.getElementById('loginEmail').value.trim();
-    const password = document.getElementById('loginPassword').value.trim();
-    if (!email || !password) {
-      showError('Inserisci email e password');
-      return;
-    }
-    try {
-      await signInWithEmailAndPassword(auth, email, password);
-      showError('');
-    } catch (err) {
-      console.error(err);
-      if (err.code === 'auth/user-not-found') {
-        showError('Nessun utente registrato');
-      } else if (err.code === 'auth/wrong-password') {
-        showError('Password non corretta');
-      } else {
-        showError('Errore di accesso: ' + err.message);
-      }
-    }
-  }
-
-  // REGISTRAZIONE con Firebase Auth
-  async function register() {
-    const email = document.getElementById('loginEmail').value.trim();
-    const password = document.getElementById('loginPassword').value.trim();
-    if (!email || !password) {
-      showError('Inserisci email e password');
-      return;
-    }
-    try {
-      await createUserWithEmailAndPassword(auth, email, password);
-      showError('Registrazione completata, ora puoi accedere');
-    } catch (err) {
-      console.error(err);
-      if (err.code === 'auth/email-already-in-use') {
-        showError('Email già registrata, prova ad accedere');
-      } else if (err.code === 'auth/weak-password') {
-        showError('Password troppo debole (min 6 caratteri)');
-      } else {
-        showError('Errore di registrazione: ' + err.message);
-      }
-    }
-  }
-
-  function openApp(user) {
-    if (!user) return;
-    userEmailSpan.textContent = user.email || '';
-    loginScreen.style.display = 'none';
-    mainApp.style.display = 'block';
-    // qui puoi aggiungere caricamento iniziale dati dal Realtime DB
-    loadPiggybank(user.uid);
-  }
-
-  async function logout() {
-    await signOut(auth);
-  }
-
-  // Cambio pagina (resto uguale al tuo)
-  function showPage(evt, page) {
-    document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
-    document.getElementById(page + 'Page').classList.add('active');
-    document.querySelectorAll('.nav-buttons button').forEach(b => b.classList.remove('active'));
-    if (evt && evt.target) evt.target.classList.add('active');
-  }
-
-  // Esempio: lettura del salvadanaio dal percorso che hai nel Realtime Database
-  function loadPiggybank(uid) {
-    // se i dati sono globali (non per utente), ignora uid
-    const piggyRef = ref(db, 'piggybank');
-    onValue(piggyRef, snapshot => {
-      const data = snapshot.val() || {};
-      // total globale
-      const total = data.total || 0;
-      const saldoElem = document.getElementById('salvadanaioTotale');
-      const saldoSettingsElem = document.getElementById('salvadanaioTotaleSettings');
-      if (saldoElem) saldoElem.textContent = `€${total.toFixed(2)}`;
-      if (saldoSettingsElem) saldoSettingsElem.textContent = `€${total.toFixed(2)}`;
-
-      // movimenti
-      const historyDiv = document.getElementById('piggyHistoryList');
-      if (!historyDiv) return;
-      historyDiv.innerHTML = '';
-      if (data.movements) {
-        const movs = Object.values(data.movements).sort((a, b) => new Date(b.data) - new Date(a.data));
-        for (const m of movs) {
-          const div = document.createElement('div');
-          div.className = 'transaction-item ' + (m.tipo === 'deposito' ? 'entrata' : 'uscita');
-          div.innerHTML = `
-            <div class="transaction-info">
-              <div>${new Date(m.data).toLocaleString('it-IT')}</div>
-              <div>${m.descrizione || ''}</div>
-            </div>
-            <div class="transaction-amount ${m.tipo === 'deposito' ? 'entrata' : 'uscita'}">
-              ${m.tipo === 'deposito' ? '+' : '-'}€${Number(m.importo || 0).toFixed(2)}
-            </div>
-          `;
-          historyDiv.appendChild(div);
+        function showError(message) {
+            if (!loginErrorBox) return;
+            loginErrorBox.textContent = message || '';
+            loginErrorBox.style.display = message ? 'block' : 'none';
         }
-      }
-    });
-  }
 
-  // Esempio: aggiunta movimento salvadanaio (compatibile con struttura attuale)
-  async function addPiggyMovement() {
-    const importo = Number(document.getElementById('piggyImporto').value || 0);
-    const tipo = document.getElementById('piggyTipo').value;
-    const descrizione = document.getElementById('piggyDescrizione').value.trim();
-    if (!importo || importo <= 0) return;
+        async function login() {
+            const email = document.getElementById('loginEmail').value.trim();
+            const password = document.getElementById('loginPassword').value.trim();
+            try {
+                await signInWithEmailAndPassword(auth, email, password);
+            } catch (err) {
+                showError('Errore: ' + err.message);
+            }
+        }
 
-    const piggyRef = ref(db, 'piggybank');
-    const snap = await get(piggyRef);
-    const data = snap.val() || {};
-    const total = Number(data.total || 0);
+        async function register() {
+            const email = document.getElementById('loginEmail').value.trim();
+            const password = document.getElementById('loginPassword').value.trim();
+            try {
+                await createUserWithEmailAndPassword(auth, email, password);
+                showError('Registrazione OK, ora accedi');
+            } catch (err) {
+                showError('Errore: ' + err.message);
+            }
+        }
 
-    const newTotal = tipo === 'deposito' ? total + importo : total - importo;
+        async function logout() { await signOut(auth); }
 
-    const movementsRef = ref(db, 'piggybank/movements');
-    const newMovRef = push(movementsRef);
-    const now = new Date().toISOString();
+        function showPage(evt, page) {
+            document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+            document.getElementById(page + 'Page').classList.add('active');
+            document.querySelectorAll('.nav-buttons button').forEach(b => b.classList.remove('active'));
+            if (evt) evt.target.classList.add('active');
+            if (page === 'history') loadHistory();
+            if (page === 'cassa') loadCassa();
+        }
 
-    const updates = {
-      [`piggybank/movements/${newMovRef.key}`]: {
-        data: now,
-        descrizione,
-        importo,
-        tipo
-      },
-      'piggybank/total': newTotal
-    };
+        async function addTransaction() {
+            const desc = document.getElementById('descrizione').value.trim();
+            const importo = Number(document.getElementById('importo').value);
+            const tipo = document.getElementById('tipo').value;
+            const categoria = document.getElementById('categoria').value;
+            if (!desc || !importo) return;
 
-    await set(ref(db), { ...(snap.val() || {}), piggybank: { ...(data || {}), movements: { ...(data.movements || {}), [newMovRef.key]: { data: now, descrizione, importo, tipo } }, total: newTotal } });
-    
-    document.getElementById('piggyImporto').value = '';
-    document.getElementById('piggyDescrizione').value = '';
-  }
+            const tRef = ref(db, 'transactions');
+            await push(tRef, {
+                descrizione: desc,
+                importo: importo,
+                tipo: tipo,
+                categoria: categoria,
+                data: new Date().toISOString()
+            });
+            document.getElementById('descrizione').value = '';
+            document.getElementById('importo').value = '';
+            updateStats();
+        }
 
-  // TODO: qui dopo possiamo implementare addTransaction, loadHistory, loadCassa ecc.
-  function addTransaction() {}
-  function loadHistory() {}
-  function loadCassa() {}
-  function buildMonthlySummary() {}
+        function loadPiggybank() {
+            onValue(ref(db, 'piggybank'), snap => {
+                const data = snap.val() || { total: 0 };
+                const t = Number(data.total || 0).toFixed(2);
+                document.getElementById('salvadanaioTotale').textContent = `€${t}`;
+                document.getElementById('salvadanaioTotaleSettings').textContent = `€${t}`;
+            });
+        }
 
-  // Espongo le funzioni al global scope perché i tuoi onclick() in HTML le chiamano
-  window.login = login;
-  window.register = register;
-  window.logout = logout;
-  window.showPage = showPage;
-  window.addPiggyMovement = addPiggyMovement;
-  window.addTransaction = addTransaction;
-  window.loadHistory = loadHistory;
-  window.loadCassa = loadCassa;
-  window.buildMonthlySummary = buildMonthlySummary;
+        async function addPiggyMovement() {
+            const imp = Number(document.getElementById('piggyImporto').value);
+            const tipo = document.getElementById('piggyTipo').value;
+            const desc = document.getElementById('piggyDescrizione').value;
+            const snap = await get(ref(db, 'piggybank'));
+            const data = snap.val() || { total: 0 };
+            const newTotal = tipo === 'deposito' ? data.total + imp : data.total - imp;
+            await set(ref(db, 'piggybank'), { ...data, total: newTotal });
+            await push(ref(db, 'piggybank/movements'), { importo: imp, tipo, descrizione: desc, data: new Date().toISOString() });
+            document.getElementById('piggyImporto').value = '';
+        }
 
-  // Gestione cambio stato autenticazione
-  onAuthStateChanged(auth, user => {
-    if (user) {
-      openApp(user);
-    } else {
-      mainApp.style.display = 'none';
-      loginScreen.style.display = 'flex';
-      document.getElementById('loginPassword').value = '';
-    }
-  });
+        function updateStats() {
+            onValue(ref(db, 'transactions'), snap => {
+                const data = snap.val() || {};
+                const now = new Date();
+                let entrateMese = 0, usciteMese = 0;
+                Object.values(data).forEach(t => {
+                    const d = new Date(t.data);
+                    if (d.getMonth() === now.getMonth() && d.getFullYear() === now.getFullYear()) {
+                        if (t.tipo === 'entrata') entrateMese += t.importo;
+                        else usciteMese += t.importo;
+                    }
+                });
+                document.getElementById('entrateMese').textContent = `€${entrateMese.toFixed(2)}`;
+                document.getElementById('usciteMese').textContent = `€${usciteMese.toFixed(2)}`;
+                document.getElementById('bilancio').textContent = `€${(entrateMese - usciteMese).toFixed(2)}`;
+            });
+        }
 
-  // Prefill email se eri già loggato in passato (non usiamo più localStorage per credenziali)
-</script>
+        function loadHistory() {
+            const list = document.getElementById('historyList');
+            onValue(ref(db, 'transactions'), snap => {
+                const data = snap.val() || {};
+                list.innerHTML = '';
+                Object.entries(data).reverse().forEach(([key, t]) => {
+                    const div = document.createElement('div');
+                    div.className = `transaction-item ${t.tipo}`;
+                    div.innerHTML = `<div>${t.descrizione} (${t.categoria})<br><small>${new Date(t.data).toLocaleString()}</small></div>
+                                     <div class="transaction-amount ${t.tipo}">${t.tipo==='entrata'?'+':'-'}€${t.importo.toFixed(2)}</div>
+                                     <button class="delete-btn" onclick="deleteTransaction('${key}')">Elimina</button>`;
+                    list.appendChild(div);
+                });
+            });
+        }
 
-<script type="module" src="./firebase.js"></script>
+        window.deleteTransaction = async (key) => { if(confirm('Eliminare?')) await remove(ref(db, 'transactions/' + key)); };
+
+        function loadCassa() {
+            const body = document.getElementById('cassaTableBody');
+            onValue(ref(db, 'transactions'), snap => {
+                const data = snap.val() || {};
+                body.innerHTML = '';
+                let saldo = 0;
+                let totE = 0, totU = 0;
+                const sorted = Object.entries(data).sort((a,b) => new Date(a[1].data) - new Date(b[1].data));
+                sorted.forEach(([key, t]) => {
+                    if (t.tipo === 'entrata') { saldo += t.importo; totE += t.importo; }
+                    else { saldo -= t.importo; totU += t.importo; }
+                    const tr = document.createElement('tr');
+                    tr.innerHTML = `<td>${new Date(t.data).toLocaleDateString()}</td><td>${t.descrizione}</td>
+                                    <td class="entrata">${t.tipo==='entrata'?'€'+t.importo.toFixed(2):''}</td>
+                                    <td class="uscita">${t.tipo==='uscita'?'€'+t.importo.toFixed(2):''}</td>
+                                    <td class="saldo">€${saldo.toFixed(2)}</td>
+                                    <td><button onclick="deleteTransaction('${key}')">❌</button></td>`;
+                    body.prepend(tr);
+                });
+                document.getElementById('cassaTotEntrate').textContent = `€${totE.toFixed(2)}`;
+                document.getElementById('cassaTotUscite').textContent = `€${totU.toFixed(2)}`;
+                document.getElementById('cassaSaldoFinale').textContent = `€${saldo.toFixed(2)}`;
+                buildMonthlySummary(data);
+            });
+        }
+
+        function buildMonthlySummary(data) {
+            const body = document.getElementById('riepilogoMensileBody');
+            body.innerHTML = '';
+            const months = {};
+            Object.values(data).forEach(t => {
+                const m = new Date(t.data).toLocaleString('it-IT', { month: 'long', year: 'numeric' });
+                if (!months[m]) months[m] = { e: 0, u: 0 };
+                if (t.tipo === 'entrata') months[m].e += t.importo;
+                else months[m].u += t.importo;
+            });
+            Object.entries(months).reverse().forEach(([m, stats]) => {
+                const tr = document.createElement('tr');
+                tr.innerHTML = `<td>${m}</td><td class="entrata">€${stats.e.toFixed(2)}</td><td class="uscita">€${stats.u.toFixed(2)}</td><td class="saldo">€${(stats.e - stats.u).toFixed(2)}</td>`;
+                body.appendChild(tr);
+            });
+        }
+
+        window.exportData = async () => {
+            const snap = await get(ref(db));
+            const blob = new Blob([JSON.stringify(snap.val(), null, 2)], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a'); a.href = url; a.download = 'budget_backup.json'; a.click();
+        };
+
+        window.importData = (event) => {
+            const file = event.target.files[0];
+            const reader = new FileReader();
+            reader.onload = async (e) => {
+                const data = JSON.parse(e.target.result);
+                if (confirm('Ripristinare i dati? Sovrascriverà tutto.')) await set(ref(db), data);
+            };
+            reader.readAsText(file);
+        };
+
+        window.login = login; window.register = register; window.logout = logout; window.showPage = showPage;
+        window.addTransaction = addTransaction; window.addPiggyMovement = addPiggyMovement;
+
+        onAuthStateChanged(auth, user => {
+            if (user) {
+                userEmailSpan.textContent = user.email;
+                loginScreen.style.display = 'none';
+                mainApp.style.display = 'block';
+                loadPiggybank(); updateStats();
+            } else {
+                mainApp.style.display = 'none';
+                loginScreen.style.display = 'flex';
+            }
+        });
+    </script>
 </body>
 </html>
