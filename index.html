@@ -254,58 +254,202 @@
         </div>
     </div>
 
-    <script>
-        const STORAGE_KEY = 'budgetFamigliaUser';
-        function showError(message) {
-            const box = document.getElementById('loginError');
-            if (box) {
-                box.textContent = message;
-                box.style.display = message ? 'block' : 'none';
-            }
+<script type="module">
+  import { 
+    auth, 
+    db,
+    createUserWithEmailAndPassword,
+    signInWithEmailAndPassword,
+    signOut,
+    onAuthStateChanged,
+    ref,
+    push,
+    set,
+    get,
+    child,
+    onValue
+  } from "./firebase.js";
+
+  const loginErrorBox = document.getElementById('loginError');
+  const loginScreen = document.getElementById('loginScreen');
+  const mainApp = document.getElementById('mainApp');
+  const userEmailSpan = document.getElementById('userEmail');
+
+  function showError(message) {
+    if (!loginErrorBox) return;
+    loginErrorBox.textContent = message || '';
+    loginErrorBox.style.display = message ? 'block' : 'none';
+  }
+
+  // LOGIN con Firebase Auth
+  async function login() {
+    const email = document.getElementById('loginEmail').value.trim();
+    const password = document.getElementById('loginPassword').value.trim();
+    if (!email || !password) {
+      showError('Inserisci email e password');
+      return;
+    }
+    try {
+      await signInWithEmailAndPassword(auth, email, password);
+      showError('');
+    } catch (err) {
+      console.error(err);
+      if (err.code === 'auth/user-not-found') {
+        showError('Nessun utente registrato');
+      } else if (err.code === 'auth/wrong-password') {
+        showError('Password non corretta');
+      } else {
+        showError('Errore di accesso: ' + err.message);
+      }
+    }
+  }
+
+  // REGISTRAZIONE con Firebase Auth
+  async function register() {
+    const email = document.getElementById('loginEmail').value.trim();
+    const password = document.getElementById('loginPassword').value.trim();
+    if (!email || !password) {
+      showError('Inserisci email e password');
+      return;
+    }
+    try {
+      await createUserWithEmailAndPassword(auth, email, password);
+      showError('Registrazione completata, ora puoi accedere');
+    } catch (err) {
+      console.error(err);
+      if (err.code === 'auth/email-already-in-use') {
+        showError('Email già registrata, prova ad accedere');
+      } else if (err.code === 'auth/weak-password') {
+        showError('Password troppo debole (min 6 caratteri)');
+      } else {
+        showError('Errore di registrazione: ' + err.message);
+      }
+    }
+  }
+
+  function openApp(user) {
+    if (!user) return;
+    userEmailSpan.textContent = user.email || '';
+    loginScreen.style.display = 'none';
+    mainApp.style.display = 'block';
+    // qui puoi aggiungere caricamento iniziale dati dal Realtime DB
+    loadPiggybank(user.uid);
+  }
+
+  async function logout() {
+    await signOut(auth);
+  }
+
+  // Cambio pagina (resto uguale al tuo)
+  function showPage(evt, page) {
+    document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+    document.getElementById(page + 'Page').classList.add('active');
+    document.querySelectorAll('.nav-buttons button').forEach(b => b.classList.remove('active'));
+    if (evt && evt.target) evt.target.classList.add('active');
+  }
+
+  // Esempio: lettura del salvadanaio dal percorso che hai nel Realtime Database
+  function loadPiggybank(uid) {
+    // se i dati sono globali (non per utente), ignora uid
+    const piggyRef = ref(db, 'piggybank');
+    onValue(piggyRef, snapshot => {
+      const data = snapshot.val() || {};
+      // total globale
+      const total = data.total || 0;
+      const saldoElem = document.getElementById('salvadanaioTotale');
+      const saldoSettingsElem = document.getElementById('salvadanaioTotaleSettings');
+      if (saldoElem) saldoElem.textContent = `€${total.toFixed(2)}`;
+      if (saldoSettingsElem) saldoSettingsElem.textContent = `€${total.toFixed(2)}`;
+
+      // movimenti
+      const historyDiv = document.getElementById('piggyHistoryList');
+      if (!historyDiv) return;
+      historyDiv.innerHTML = '';
+      if (data.movements) {
+        const movs = Object.values(data.movements).sort((a, b) => new Date(b.data) - new Date(a.data));
+        for (const m of movs) {
+          const div = document.createElement('div');
+          div.className = 'transaction-item ' + (m.tipo === 'deposito' ? 'entrata' : 'uscita');
+          div.innerHTML = `
+            <div class="transaction-info">
+              <div>${new Date(m.data).toLocaleString('it-IT')}</div>
+              <div>${m.descrizione || ''}</div>
+            </div>
+            <div class="transaction-amount ${m.tipo === 'deposito' ? 'entrata' : 'uscita'}">
+              ${m.tipo === 'deposito' ? '+' : '-'}€${Number(m.importo || 0).toFixed(2)}
+            </div>
+          `;
+          historyDiv.appendChild(div);
         }
-        function login() {
-            const email = document.getElementById('loginEmail').value.trim();
-            const password = document.getElementById('loginPassword').value.trim();
-            if (!email || !password) { showError('Inserisci email e password'); return; }
-            const raw = localStorage.getItem(STORAGE_KEY);
-            if (!raw) { showError('Nessun utente registrato'); return; }
-            const user = JSON.parse(raw);
-            if (user.email !== email || user.password !== password) { showError('Credenziali non valide'); return; }
-            showError('');
-            openApp(user);
-        }
-        function register() {
-            const email = document.getElementById('loginEmail').value.trim();
-            const password = document.getElementById('loginPassword').value.trim();
-            if (!email || !password) { showError('Inserisci email e password'); return; }
-            localStorage.setItem(STORAGE_KEY, JSON.stringify({ email, password }));
-            showError('Registrazione completata, ora puoi accedere');
-        }
-        function openApp(user) {
-            document.getElementById('userEmail').textContent = user.email;
-            document.getElementById('loginScreen').style.display = 'none';
-            document.getElementById('mainApp').style.display = 'block';
-        }
-        function logout() {
-            document.getElementById('mainApp').style.display = 'none';
-            document.getElementById('loginScreen').style.display = 'flex';
-            document.getElementById('loginPassword').value = '';
-        }
-        function showPage(evt, page) {
-            document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
-            document.getElementById(page + 'Page').classList.add('active');
-            document.querySelectorAll('.nav-buttons button').forEach(b => b.classList.remove('active'));
-            if (evt && evt.target) evt.target.classList.add('active');
-        }
-        function addTransaction() {}
-        function loadHistory() {}
-        function loadCassa() {}
-        function buildMonthlySummary() {}
-        function addPiggyMovement() {}
-        window.onload = () => {
-            const raw = localStorage.getItem(STORAGE_KEY);
-            if (raw) document.getElementById('loginEmail').value = JSON.parse(raw).email;
-        }
-    </script>
+      }
+    });
+  }
+
+  // Esempio: aggiunta movimento salvadanaio (compatibile con struttura attuale)
+  async function addPiggyMovement() {
+    const importo = Number(document.getElementById('piggyImporto').value || 0);
+    const tipo = document.getElementById('piggyTipo').value;
+    const descrizione = document.getElementById('piggyDescrizione').value.trim();
+    if (!importo || importo <= 0) return;
+
+    const piggyRef = ref(db, 'piggybank');
+    const snap = await get(piggyRef);
+    const data = snap.val() || {};
+    const total = Number(data.total || 0);
+
+    const newTotal = tipo === 'deposito' ? total + importo : total - importo;
+
+    const movementsRef = ref(db, 'piggybank/movements');
+    const newMovRef = push(movementsRef);
+    const now = new Date().toISOString();
+
+    const updates = {
+      [`piggybank/movements/${newMovRef.key}`]: {
+        data: now,
+        descrizione,
+        importo,
+        tipo
+      },
+      'piggybank/total': newTotal
+    };
+
+    await set(ref(db), { ...(snap.val() || {}), piggybank: { ...(data || {}), movements: { ...(data.movements || {}), [newMovRef.key]: { data: now, descrizione, importo, tipo } }, total: newTotal } });
+    
+    document.getElementById('piggyImporto').value = '';
+    document.getElementById('piggyDescrizione').value = '';
+  }
+
+  // TODO: qui dopo possiamo implementare addTransaction, loadHistory, loadCassa ecc.
+  function addTransaction() {}
+  function loadHistory() {}
+  function loadCassa() {}
+  function buildMonthlySummary() {}
+
+  // Espongo le funzioni al global scope perché i tuoi onclick() in HTML le chiamano
+  window.login = login;
+  window.register = register;
+  window.logout = logout;
+  window.showPage = showPage;
+  window.addPiggyMovement = addPiggyMovement;
+  window.addTransaction = addTransaction;
+  window.loadHistory = loadHistory;
+  window.loadCassa = loadCassa;
+  window.buildMonthlySummary = buildMonthlySummary;
+
+  // Gestione cambio stato autenticazione
+  onAuthStateChanged(auth, user => {
+    if (user) {
+      openApp(user);
+    } else {
+      mainApp.style.display = 'none';
+      loginScreen.style.display = 'flex';
+      document.getElementById('loginPassword').value = '';
+    }
+  });
+
+  // Prefill email se eri già loggato in passato (non usiamo più localStorage per credenziali)
+</script>
+
+<script type="module" src="./firebase.js"></script>
 </body>
 </html>
