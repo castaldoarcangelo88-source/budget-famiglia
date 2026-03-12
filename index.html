@@ -297,9 +297,11 @@
                 document.getElementById('salvadanaioTotale').textContent = `€${t}`;
                 document.getElementById('salvadanaioTotaleSettings').textContent = `€${t}`;
             });
+                if (!auth.currentUser) return;
         }
 
         async function addPiggyMovement() {
+                if (!auth.currentUser) return;
             const imp = Number(document.getElementById('piggyImporto').value);
             const tipo = document.getElementById('piggyTipo').value;
             const desc = document.getElementById('piggyDescrizione').value;
@@ -312,12 +314,12 @@
         }
 
         function updateStats() {
+                if (!auth.currentUser) return;
             onValue(, snap => {
                 const data = snap.val() || {};
                 const now = new Date();
                 let entrateMese = 0, usciteMese = 0;
                 Object.values(data).forEach(t => {
-                    const d = new Date(t.data);
                     if (d.getMonth() === now.getMonth() && d.getFullYear() === now.getFullYear()) {
                         if (t.tipo === 'entrata') entrateMese += t.importo;
                         else usciteMese += t.importo;
@@ -336,6 +338,7 @@
                 list.innerHTML = '';
                 Object.entries(data).reverse().forEach(([key, t]) => {
                     const div = document.createElement('div');
+                        if (!auth.currentUser) return;
                     div.className = `transaction-item ${t.tipo}`;
                     div.innerHTML = `<div>${t.descrizione} (${t.categoria})<br><small>${new Date(t.data).toLocaleString()}</small></div>
                                      <div class="transaction-amount ${t.tipo}">${t.tipo==='entrata'?'+':'-'}€${t.importo.toFixed(2)}</div>
@@ -354,6 +357,7 @@
                 body.innerHTML = '';
                 let saldo = 0;
                 let totE = 0, totU = 0;
+                    if (!auth.currentUser) return;
                 const sorted = Object.entries(data).sort((a,b) => new Date(a[1].data) - new Date(b[1].data));
                 sorted.forEach(([key, t]) => {
                     if (t.tipo === 'entrata') { saldo += t.importo; totE += t.importo; }
