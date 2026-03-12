@@ -277,7 +277,7 @@
             const categoria = document.getElementById('categoria').value;
             if (!desc || !importo) return;
 
-            const tRef = ref(db, 'transactions');
+            const tRef = ;
             await push(tRef, {
                 descrizione: desc,
                 importo: importo,
@@ -291,7 +291,7 @@
         }
 
         function loadPiggybank() {
-            onValue(ref(db, 'piggybank'), snap => {
+            onValue(ref(db, 'piggybank/' + auth.currentUser.uid), snap => {
                 const data = snap.val() || { total: 0 };
                 const t = Number(data.total || 0).toFixed(2);
                 document.getElementById('salvadanaioTotale').textContent = `€${t}`;
@@ -303,16 +303,16 @@
             const imp = Number(document.getElementById('piggyImporto').value);
             const tipo = document.getElementById('piggyTipo').value;
             const desc = document.getElementById('piggyDescrizione').value;
-            const snap = await get(ref(db, 'piggybank'));
+            const snap = await get(ref(db, 'piggybank/' + auth.currentUser.uid));
             const data = snap.val() || { total: 0 };
             const newTotal = tipo === 'deposito' ? data.total + imp : data.total - imp;
-            await set(ref(db, 'piggybank'), { ...data, total: newTotal });
+            await set(ref(db, 'piggybank/' + auth.currentUser.uid), { ...data, total: newTotal });
             await push(ref(db, 'piggybank/movements'), { importo: imp, tipo, descrizione: desc, data: new Date().toISOString() });
             document.getElementById('piggyImporto').value = '';
         }
 
         function updateStats() {
-            onValue(ref(db, 'transactions'), snap => {
+            onValue(, snap => {
                 const data = snap.val() || {};
                 const now = new Date();
                 let entrateMese = 0, usciteMese = 0;
@@ -331,7 +331,7 @@
 
         function loadHistory() {
             const list = document.getElementById('historyList');
-            onValue(ref(db, 'transactions'), snap => {
+            onValue(, snap => {
                 const data = snap.val() || {};
                 list.innerHTML = '';
                 Object.entries(data).reverse().forEach(([key, t]) => {
@@ -349,7 +349,7 @@
 
         function loadCassa() {
             const body = document.getElementById('cassaTableBody');
-            onValue(ref(db, 'transactions'), snap => {
+            onValue(, snap => {
                 const data = snap.val() || {};
                 body.innerHTML = '';
                 let saldo = 0;
