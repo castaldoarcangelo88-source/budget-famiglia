@@ -263,9 +263,82 @@
 
                 <div class="stat-card" style="margin-bottom: 15px;">
                     <h3>Movimenti Salvadanaio</h3>
-                    <div id="piggyHistoryList"></div>
+                      </p>
+    </div>
+</div>
+
+<script>
+    const STORAGE_KEY = 'budgetFamigliaUser';
+
+    function showError(message) {
+        const box = document.getElementById('loginError');
+        if (box) {
+            box.textContent = message;
+            box.style.display = message ? 'block' : 'none';
+        }
+    }
+
+    function login() {
+        const email = document.getElementById('loginEmail').value.trim();
+        const password = document.getElementById('loginPassword').value.trim();
+        if (!email || !password) { showError('Inserisci email e password'); return; }
+        const raw = localStorage.getItem(STORAGE_KEY);
+        if (!raw) { showError('Nessun utente registrato'); return; }
+        const user = JSON.parse(raw);
+        if (user.email !== email || user.password !== password) { showError('Credenziali non valide'); return; }
+        showError('');
+        openApp(user);
+    }
+
+    function register() {
+        const email = document.getElementById('loginEmail').value.trim();
+        const password = document.getElementById('loginPassword').value.trim();
+        if (!email || !password) { showError('Inserisci email e password'); return; }
+        const user = { email, password };
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(user));
+        showError('Registrazione completata, ora puoi accedere');
+    }
+
+    function openApp(user) {
+        document.getElementById('userEmail').textContent = user.email;
+        document.getElementById('loginScreen').style.display = 'none';
+        document.getElementById('mainApp').style.display = 'block';
+    }
+
+    function logout() {
+        document.getElementById('mainApp').style.display = 'none';
+        document.getElementById('loginScreen').style.display = 'flex';
+        document.getElementById('loginPassword').value = '';
+    }
+
+    window.addEventListener('DOMContentLoaded', () => {
+        const raw = localStorage.getItem(STORAGE_KEY);
+        if (raw) {
+            const user = JSON.parse(raw);
+            document.getElementById('loginEmail').value = user.email;
+        }
+    });
+
+    function showPage(evt, page) {
+        const pages = document.querySelectorAll('.page');
+        pages.forEach(p => p.classList.remove('active'));
+        document.getElementById(page + 'Page').classList.add('active');
+        const buttons = document.querySelectorAll('.nav-buttons button');
+        buttons.forEach(b => b.classList.remove('active'));
+        if (evt && evt.target) evt.target.classList.add('active');
+    }
+
+    // Stub per le altre funzioni
+    function addTransaction() {}
+    function loadHistory() {}
+    function loadCassa() {}
+    function buildMonthlySummary() {}
+    function addPiggyMovement() {}
+</script>
+</body>
+</html>      <div id="piggyHistoryList"></div>
                 </div>
 
                 <div class="stat-card">
                     <h3>Backup e Ripristino</h3>
-                    <p
+                    
