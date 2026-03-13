@@ -40,8 +40,10 @@ export const db = getDatabase(app);
 export { 
     createUserWithEmailAndPassword, 
     signInWithEmailAndPassword, 
-    signOut, 
+    signOut,
+    getAuth, 
     onAuthStateChanged,
+    getDatabase,
     GoogleAuthProvider,
     signInWithPopup,
     ref,
