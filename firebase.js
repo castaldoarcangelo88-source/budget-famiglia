@@ -5,7 +5,9 @@ import {
     createUserWithEmailAndPassword, 
     signInWithEmailAndPassword,
     signOut,
-    onAuthStateChanged 
+    onAuthStateChanged,
+    GoogleAuthProvider,
+    signInWithPopup 
 } from "https://www.gstatic.com/firebasejs/10.12.4/firebase-auth.js";
 import { 
     getDatabase, 
@@ -15,7 +17,8 @@ import {
     get, 
     child, 
     onValue,
-    remove
+    remove,
+    update
 } from "https://www.gstatic.com/firebasejs/10.12.4/firebase-database.js";
 
 const firebaseConfig = {
@@ -39,11 +42,14 @@ export {
     signInWithEmailAndPassword, 
     signOut, 
     onAuthStateChanged,
+    GoogleAuthProvider,
+    signInWithPopup,
     ref,
     push,
     set,
     get,
     child,
     onValue,
-    remove
+    remove,
+    update
 };
