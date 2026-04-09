@@ -15,7 +15,6 @@
         .container {
             background: rgba(20, 20, 30, 0.95); border-radius: 15px; padding: 15px;
             max-width: 600px; width: 100%; box-shadow: 0 10px 50px rgba(0,0,0,0.3); color: white;
-            region {display: block; width: 100%;}
         }
         #loginScreen {display: flex; flex-direction: column; gap: 20px;}
         #mainApp {display: none;}
@@ -43,8 +42,7 @@
             flex: 1; min-width: 120px; padding: 10px; border: none; border-radius: 5px; font-size: 14px;
         }
         .stats {
-            display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
-            gap: 10px; margin-bottom: 15px;
+            display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 10px; margin-bottom: 15px;
         }
         .stat-card {background: rgba(255,255,255,0.1); padding: 15px; border-radius: 10px; text-align: center;}
         .stat-card h3 {font-size: 14px; margin-bottom: 8px; opacity: 0.8;}
@@ -58,8 +56,8 @@
         .nav-buttons button.active {background: linear-gradient(45deg, #FFD700, #FFA500); color: #000;}
         #historyList, #piggyHistoryList {max-height: 400px; overflow-y: auto;}
         .transaction-item {
-            background: rgba(255,255,255,0.05); padding: 12px; margin-bottom: 8px; border-radius: 8px;
-            display: flex; justify-content: space-between; align-items: center;
+            background: rgba(255,255,255,0.05); padding: 12px; margin-bottom: 8px;
+            border-radius: 8px; display: flex; justify-content: space-between; align-items: center;
         }
         .transaction-item.entrata {border-left: 4px solid #4CAF50;}
         .transaction-item.uscita {border-left: 4px solid #f44336;}
@@ -71,9 +69,8 @@
             background: #f44336; color: white; border: none; padding: 8px 15px;
             border-radius: 5px; cursor: pointer; margin-left: 10px;
         }
-        .filters {display: flex; gap: 10px; margin-bottom: 15px; flex-wrap: wrap; align-items: center;}
-        .filters select {flex: 0 0 auto; min-width: 120px; padding: 8px; border: none; border-radius: 5px;}
-        .filters label {font-size: 14px;}
+        .filters {display: flex; gap: 10px; margin-bottom: 15px; flex-wrap: wrap;}
+        .filters select {flex: 1; min-width: 120px; padding: 8px; border: none; border-radius: 5px;}
         .page {display: none;}
         .page.active {display: block;}
         .error-message {
@@ -84,6 +81,8 @@
             .form-row {flex-direction: column;}
             .form-row input, .form-row select {width: 100%;}
         }
+        
+        /* Tabella Cassa stile Excel */
         .tabella-cassa {width: 100%; border-collapse: collapse; font-size: 0.9rem; margin-top: 15px;}
         .tabella-cassa th, .tabella-cassa td {border: 1px solid #444; padding: 8px; text-align: left;}
         .tabella-cassa thead th {background: #FFD700; color: #000; font-weight: bold; position: sticky; top: 0;}
@@ -92,307 +91,613 @@
         .tabella-cassa td.uscita {color: #f44336; font-weight: 600;}
         .tabella-cassa td.saldo {background: rgba(76,175,80,0.15); font-weight: 600;}
         .tabella-cassa tbody tr:hover {background: rgba(255,255,255,0.08); cursor: pointer;}
+
         .totali-cassa {display: flex; gap: 15px; margin-bottom: 15px; flex-wrap: wrap;}
         .totali-cassa > div {flex: 1; min-width: 120px; background: rgba(255,255,255,0.1); padding: 10px; border-radius: 8px; text-align: center;}
     </style>
 </head>
 <body>
-<div class="container">
-<body>
-  <div id="login-page" class="page active">
-    <h1>Budget Famiglia</h1>
-    <button id="login-btn">Accedi con Google</button>
-    <div id="error-message" class="error-message"></div>
-  </div>
+    <div class="container">
+        <!-- Login Screen -->
+        <div id="loginScreen">
+            <h1>💰 Budget Famiglia</h1>
+            <div class="login-box">
+                <h2>Accesso</h2>
+                <div id="loginError" class="error-message"></div>
+                <input type="email" id="loginEmail" placeholder="Email" onkeypress="if(event.key==='Enter')login()">
+                <input type="password" id="loginPassword" placeholder="Password" onkeypress="if(event.key==='Enter')login()">
+                <button class="btn" onclick="login()">Accedi</button>
+                <p style="margin-top: 15px; font-size: 14px;">Non hai un account?</p>
+                <button class="btn" onclick="register()" style="background: rgba(255,255,255,0.2);">Registrati</button>
+            </div>
+        </div>
 
-  <div id="main-page" class="page">
-    <div class="header">
-      <h1>Budget Famiglia</h1>
-      <button id="logout-btn">Logout</button>
+        <!-- Main App -->
+        <div id="mainApp">
+            <h1>💰 Budget Famiglia</h1>
+            <div class="user-info">
+                <span id="userEmail"></span>
+                <button onclick="logout()">Esci</button>
+            </div>
+
+            <!-- Navigation -->
+            <div class="nav-buttons">
+                <button class="active" onclick="showPage(event, 'main')">Principale</button>
+                <button onclick="showPage(event, 'history')">Ultimi Movimenti</button>
+                <button onclick="showPage(event, 'cassa')">Cassa</button>
+                <button onclick="showPage(event, 'settings')">Impostazioni</button>
+            </div>
+
+            <!-- Main Page -->
+            <div id="mainPage" class="page active">
+                <div class="form-row">
+                    <input type="text" id="descrizione" placeholder="Descrizione">
+                    <input type="number" id="importo" placeholder="Importo (€)" step="0.01">
+                </div>
+                <div class="form-row">
+                    <select id="tipo">
+                        <option value="entrata">Entrata</option>
+                        <option value="uscita">Uscita</option>
+                    </select>
+                    <select id="categoria">
+                        <option value="Stipendio">Stipendio</option>
+                        <option value="Spesa">Spesa</option>
+                        <option value="Benzina">Benzina</option>
+                        <option value="Ristorante">Ristorante</option>
+                        <option value="Bollette">Bollette</option>
+                        <option value="Altro">Altro</option>
+                    </select>
+                </div>
+                <div class="form-row">
+                    <button class="btn" onclick="addTransaction()">Aggiungi</button>
+                </div>
+                <div class="stats">
+                    <div class="stat-card"><h3>Entrate Mese</h3><p id="entrateMese">€0.00</p></div>
+                    <div class="stat-card"><h3>Uscite Mese</h3><p id="usciteMese">€0.00</p></div>
+                    <div class="stat-card"><h3>Bilancio</h3><p id="bilancio">€0.00</p></div>
+                    <div class="stat-card"><h3>Entrate Settimana</h3><p id="entrateSettimana">€0.00</p></div>
+                    <div class="stat-card"><h3>Uscite Settimana</h3><p id="usciteSettimana">€0.00</p></div>
+                    <div class="stat-card"><h3>Bilancio Settimana</h3><p id="bilancioSettimana">€0.00</p></div>
+                    <div class="stat-card"><h3>Salvadanaio</h3><p id="salvadanaioTotale">€0.00</p></div>
+                </div>
+            </div>
+
+            <!-- History Page -->
+            <div id="historyPage" class="page">
+                <div class="filters">
+                    <select id="filterTipo" onchange="loadHistory()">
+                        <option value="tutti">Tutti i tipi</option>
+                        <option value="entrata">Solo Entrate</option>
+                        <option value="uscita">Solo Uscite</option>
+                    </select>
+                    <select id="filterPeriodo" onchange="loadHistory()">
+                        <option value="tutti">Tutto</option>
+                        <option value="settimana">Questa Settimana</option>
+                        <option value="mese">Questo Mese</option>
+                    </select>
+                </div>
+                <div id="historyList"></div>
+            </div>
+
+            <!-- Cassa Page -->
+            <div id="cassaPage" class="page">
+                <!-- Riepilogo mensile -->
+                <h4>Riepilogo mensile</h4>
+                <table class="tabella-cassa" style="margin-bottom:15px;">
+                    <thead>
+                        <tr>
+                            <th>Mese</th>
+                            <th>Entrate</th>
+                            <th>Uscite</th>
+                            <th>Saldo mese</th>
+                        </tr>
+                    </thead>
+                    <tbody id="riepilogoMensileBody">
+                    </tbody>
+                </table>
+
+                <!-- Filtro mese Cassa -->
+                <div class="filters" style="margin-bottom:10px;">
+                    <select id="cassaMese" onchange="loadCassa()">
+                        <option value="tutti">Tutti i mesi</option>
+                        <!-- verrà comunque usato il valore YYYY-MM -->
+                        <option value="2025-12">Dicembre 2025</option>
+                        <option value="2026-01">Gennaio 2026</option>
+                        <option value="2026-02">Febbraio 2026</option>
+                        <option value="2026-03">Marzo 2026</option>
+                    </select>
+                </div>
+
+                <div class="totali-cassa">
+                    <div><h4>Tot. Entrate</h4><p id="cassaTotEntrate">€0.00</p></div>
+                    <div><h4>Tot. Uscite</h4><p id="cassaTotUscite">€0.00</p></div>
+                    <div><h4>Saldo Finale</h4><p id="cassaSaldoFinale">€0.00</p></div>
+                </div>
+                <div style="max-height: 500px; overflow-y: auto;">
+                    <table class="tabella-cassa">
+                        <thead>
+                            <tr>
+                                <th>Data</th>
+                                <th>Descrizione</th>
+                                <th>Entrata</th>
+                                <th>Uscita</th>
+                                <th>Saldo</th>
+                            </tr>
+                        </thead>
+                        <tbody id="cassaTableBody">
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Settings Page -->
+            <div id="settingsPage" class="page">
+                <div class="stat-card" style="margin-bottom: 15px;">
+                    <h3>Salvadanaio</h3>
+                    <p style="font-size: 14px; margin: 10px 0;">
+                        Gestisci i depositi e i prelievi dal salvadanaio. Il totale è condiviso su tutti i dispositivi collegati a questo account.
+                    </p>
+                    <div class="form-row">
+                        <input type="number" id="piggyImporto" placeholder="Importo (€)" step="0.01">
+                        <select id="piggyTipo">
+                            <option value="deposito">Deposito</option>
+                            <option value="prelievo">Prelievo</option>
+                        </select>
+                    </div>
+                    <div class="form-row">
+                        <input type="text" id="piggyDescrizione" placeholder="Descrizione (opzionale)">
+                    </div>
+                    <div class="form-row">
+                        <button class="btn" onclick="addPiggyMovement()">Aggiorna Salvadanaio</button>
+                    </div>
+                    <p style="font-size: 14px; margin-top: 10px;">
+                        Totale salvadanaio attuale: <strong id="salvadanaioTotaleSettings">€0.00</strong>
+                    </p>
+                </div>
+
+                <div class="stat-card" style="margin-bottom: 15px;">
+                    <h3>Movimenti Salvadanaio</h3>
+                    <div id="piggyHistoryList"></div>
+                </div>
+
+                <div class="stat-card">
+                    <h3>Backup e Ripristino</h3>
+                    <p style="font-size: 14px; margin: 15px 0;">I tuoi dati sono sincronizzati automaticamente su Firebase</p>
+                    <button class="btn" onclick="downloadBackup()">Scarica Backup JSON</button>
+                </div>
+                <div class="stat-card" style="margin-top: 15px;">
+                    <h3>Informazioni</h3>
+                    <p style="font-size: 14px; margin-top: 10px;">Database: Firebase Realtime Database</p>
+                    <p style="font-size: 14px;">Sincronizzazione: Automatica</p>
+                </div>
+            </div>
+        </div>
     </div>
 
-    <div class="stats">
-      <div class="stat-card entrate">
-        <h3>Entrate</h3>
-        <p id="totale-entrate">€0.00</p>
-      </div>
-      <div class="stat-card uscite">
-        <h3>Uscite</h3>
-        <p id="totale-uscite">€0.00</p>
-      </div>
-      <div class="stat-card saldo">
-        <h3>Saldo</h3>
-        <p id="saldo-totale">€0.00</p>
-      </div>
-      <div class="stat-card salvadanaio">
-        <h3>Salvadanaio</h3>
-        <p id="totale-salvadanaio">€0.00</p>
-      </div>
-    </div>
+    <!-- Firebase SDK -->
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-database-compat.js"></script>
 
-    <div class="form-row">
-      <input type="text" id="descrizione" placeholder="Descrizione">
-      <input type="number" id="importo" placeholder="Importo" step="0.01">
-      <select id="tipo">
-        <option value="entrata">Entrata</option>
-        <option value="uscita">Uscita</option>
-      </select>
-      <button id="aggiungi-btn">Aggiungi</button>
-    </div>
+    <script>
+        const firebaseConfig = {
+            apiKey: "AIzaSyB8E0t2dRpB0ds9nh5VEBJ8rPIyfGRFgOY",
+            authDomain: "budget-famiglia-4477e.firebaseapp.com",
+            databaseURL: "https://budget-famiglia-4477e-default-rtdb.firebaseio.com",
+            projectId: "budget-famiglia-4477e",
+            storageBucket: "budget-famiglia-4477e.firebasestorage.app",
+            messagingSenderId: "915933306200",
+            appId: "1:915933306200:web:c873f3b3649ce901a5d92d"
+        };
 
-    <div class="filters">
-      <select id="filtro-tipo">
-        <option value="">Tutti</option>
-        <option value="entrata">Entrate</option>
-        <option value="uscita">Uscite</option>
-      </select>
-      <label><input type="checkbox" id="mostra-eliminati"> Mostra eliminati</label>
-    </div>
+        firebase.initializeApp(firebaseConfig);
+        const auth = firebase.auth();
+        const database = firebase.database();
+        let currentUser = null;
+        let transactions = [];
+        let piggyTotal = 0;
+        let piggyMovements = [];
 
-    <table class="tabella-cassa">
-      <thead>
-        <tr>
-          <th>Data</th>
-          <th>Descrizione</th>
-          <th>Entrata</th>
-          <th>Uscita</th>
-          <th>Saldo</th>
-          <th>Azioni</th>
-        </tr>
-      </thead>
-      <tbody id="tabella-body"></tbody>
-    </table>
-
-    <div class="backup-buttons">
-      <button id="backup-btn">Backup Dati</button>
-      <button id="restore-btn">Ripristina Backup</button>
-      <input type="file" id="file-input" accept=".json" style="display:none">
-    </div>
-  </div>
-
-  <script type="module">
-    import { initializeApp } from './firebase.js';
-    import { getAuth, signInWithPopup, GoogleAuthProvider, onAuthStateChanged, signOut } from './firebase.js';
-    import { getDatabase, ref, push, set, onValue, remove, update } from './firebase.js';
-
-    const firebaseConfig = {
-      apiKey: "AIzaSyB8E0t2dRpB8ds9nh5VEBJ8rPIyfGRFg0Y",
-      authDomain: "AIzaSyB8E0t2budget-famiglia-4477edRpB8ds9nh5VEBJ8rPIyfGRFg0Y.firebaseapp.com",
-      databaseURL: "https://AIzaSyB8E0t2budget-famiglia-4477edRpB8ds9nh5VEBJ8rPIyfGRFg0Y-default-rtdb.europe-west1.firebasedatabase.app",
-      projectId: "AIzaSyB8E0t2budget-famiglia-4477edRpB8ds9nh5VEBJ8rPIyfGRFg0Y",
-      storageBucket: "AIzaSyB8E0t2budget-famiglia-4477edRpB8ds9nh5VEBJ8rPIyfGRFg0Y.firebasestorage.app",
-      messagingSenderId: "AIzaSyB8E0t2915933306200budget-famiglia-4477edRpB8ds9nh5VEBJ8rPIyfGRFg0Y",
-      appId: "1:AIzaSyB8E0t2915933306200budget-famiglia-4477edRpB8ds9nh5VEBJ8rPIyfGRFg0Y:web:b30e6f4a2ef1e4f7be7b13"
-    };
-
-    const app = initializeApp(firebaseConfig);
-    const auth = getAuth(app);
-    const database = getDatabase(app);
-    const provider = new GoogleAuthProvider();
-
-    let currentUser = null;
-    let transactions = [];
-
-    const loginPage = document.getElementById('login-page');
-    const mainPage = document.getElementById('main-page');
-    const loginBtn = document.getElementById('login-btn');
-    const logoutBtn = document.getElementById('logout-btn');
-    const errorMessage = document.getElementById('error-message');
-
-    onAuthStateChanged(auth, (user) => {
-      if (user) {
-        currentUser = user;
-        loginPage.classList.remove('active');
-        mainPage.classList.add('active');
-        caricaDatiUtente();
-      } else {
-        currentUser = null;
-        mainPage.classList.remove('active');
-        loginPage.classList.add('active');
-      }
-    });
-
-    loginBtn.addEventListener('click', async () => {
-      try {
-        await signInWithPopup(auth, provider);
-      } catch (error) {
-        errorMessage.textContent = 'Errore login: ' + error.message;
-      }
-    });
-
-    logoutBtn.addEventListener('click', async () => {
-      await signOut(auth);
-    });
-
-    function caricaDatiUtente() {
-      if (!currentUser) return;
-
-      const transactionsRef = ref(database, `transactions/${currentUser.uid}`);
-      onValue(transactionsRef, (snapshot) => {
-        transactions = [];
-        snapshot.forEach((childSnapshot) => {
-          transactions.push({
-            id: childSnapshot.key,
-            ...childSnapshot.val()
-          });
+        auth.onAuthStateChanged(user => {
+            if (user) {
+                currentUser = user;
+                document.getElementById('loginScreen').style.display = 'none';
+                document.getElementById('mainApp').style.display = 'block';
+                document.getElementById('userEmail').textContent = user.email;
+                loadTransactions();
+                loadPiggybank();
+            } else {
+                currentUser = null;
+                document.getElementById('loginScreen').style.display = 'flex';
+                document.getElementById('mainApp').style.display = 'none';
+            }
         });
-        aggiornaTabella();
-        aggiornaTotali();
-      });
 
-      const piggyBankRef = ref(database, `piggybank/${currentUser.uid}`);
-      onValue(piggyBankRef, (snapshot) => {
-        const amount = snapshot.val() || 0;
-        document.getElementById('totale-salvadanaio').textContent = `€${amount.toFixed(2)}`;
-      });
-    }
-
-    document.getElementById('aggiungi-btn').addEventListener('click', () => {
-      const descrizione = document.getElementById('descrizione').value.trim();
-      const importo = parseFloat(document.getElementById('importo').value);
-      const tipo = document.getElementById('tipo').value;
-
-      if (!descrizione || isNaN(importo) || importo <= 0) {
-        alert('Inserisci descrizione e importo validi');
-        return;
-      }
-
-      if (!currentUser) return;
-
-      const transactionsRef = ref(database, `transactions/${currentUser.uid}`);
-      const newTransactionRef = push(transactionsRef);
-      set(newTransactionRef, {
-        descrizione,
-        importo,
-        tipo,
-        data: new Date().toISOString(),
-        eliminato: false
-      });
-
-      document.getElementById('descrizione').value = '';
-      document.getElementById('importo').value = '';
-    });
-
-    function aggiornaTabella() {
-      const tbody = document.getElementById('tabella-body');
-      tbody.innerHTML = '';
-
-      const filtroTipo = document.getElementById('filtro-tipo').value;
-      const mostraEliminati = document.getElementById('mostra-eliminati').checked;
-
-      let transazioniFiltrate = transactions.filter(t => {
-        if (!mostraEliminati && t.eliminato) return false;
-        if (filtroTipo && t.tipo !== filtroTipo) return false;
-        return true;
-      });
-
-      transazioniFiltrate.sort((a, b) => new Date(b.data) - new Date(a.data));
-
-      let saldoProgressivo = 0;
-      transazioniFiltrate.reverse().forEach(t => {
-        if (!t.eliminato) {
-          saldoProgressivo += t.tipo === 'entrata' ? t.importo : -t.importo;
+        function showError(message) {
+            const errorDiv = document.getElementById('loginError');
+            errorDiv.textContent = message;
+            errorDiv.style.display = 'block';
+            setTimeout(() => { errorDiv.style.display = 'none'; }, 5000);
         }
 
-        const tr = document.createElement('tr');
-        if (t.eliminato) tr.style.backgroundColor = '#ffcccc';
-
-        const dataObj = new Date(t.data);
-        const dataFormattata = dataObj.toLocaleDateString('it-IT');
-
-        tr.innerHTML = `
-          <td>${dataFormattata}</td>
-          <td>${t.descrizione}</td>
-          <td class="transaction-amount entrata">${t.tipo === 'entrata' ? '€' + t.importo.toFixed(2) : ''}</td>
-          <td class="transaction-amount uscita">${t.tipo === 'uscita' ? '€' + t.importo.toFixed(2) : ''}</td>
-          <td>${'€' + saldoProgressivo.toFixed(2)}</td>
-          <td>
-            ${!t.eliminato ? `<button class="delete-btn" data-id="${t.id}">Elimina</button>` : ''}
-          </td>
-        `;
-
-        tbody.appendChild(tr);
-      });
-
-      document.querySelectorAll('.delete-btn').forEach(btn => {
-        btn.addEventListener('click', (e) => {
-          const id = e.target.dataset.id;
-          if (confirm('Eliminare questa transazione?')) {
-            const transactionRef = ref(database, `transactions/${currentUser.uid}/${id}`);
-            update(transactionRef, { eliminato: true });
-          }
-        });
-      });
-    }
-
-    function aggiornaTotali() {
-      let totaleEntrate = 0;
-      let totaleUscite = 0;
-
-      transactions.forEach(t => {
-        if (!t.eliminato) {
-          if (t.tipo === 'entrata') {
-            totaleEntrate += t.importo;
-          } else {
-            totaleUscite += t.importo;
-          }
+        async function login() {
+            const email = document.getElementById('loginEmail').value;
+            const password = document.getElementById('loginPassword').value;
+            try {
+                await auth.signInWithEmailAndPassword(email, password);
+            } catch (error) {
+                showError(error.message);
+            }
         }
-      });
 
-      const saldo = totaleEntrate - totaleUscite;
+        async function register() {
+            const email = document.getElementById('loginEmail').value;
+            const password = document.getElementById('loginPassword').value;
+            if (password.length < 6) {
+                showError('La password deve essere di almeno 6 caratteri');
+                return;
+            }
+            try {
+                await auth.createUserWithEmailAndPassword(email, password);
+            } catch (error) {
+                showError(error.message);
+            }
+        }
 
-      document.getElementById('totale-entrate').textContent = `€${totaleEntrate.toFixed(2)}`;
-      document.getElementById('totale-uscite').textContent = `€${totaleUscite.toFixed(2)}`;
-      document.getElementById('saldo-totale').textContent = `€${saldo.toFixed(2)}`;
-    }
+        function logout() {
+            auth.signOut();
+        }
 
-    document.getElementById('filtro-tipo').addEventListener('change', aggiornaTabella);
-    document.getElementById('mostra-eliminati').addEventListener('change', aggiornaTabella);
-
-    document.getElementById('backup-btn').addEventListener('click', () => {
-      const dataStr = JSON.stringify({ transactions, salvadanaio: parseFloat(document.getElementById('totale-salvadanaio').textContent.replace('€', '')) }, null, 2);
-      const dataBlob = new Blob([dataStr], { type: 'application/json' });
-      const url = URL.createObjectURL(dataBlob);
-      const link = document.createElement('a');
-      link.href = url;
-      link.download = `backup-${new Date().toISOString().split('T')[0]}.json`;
-      link.click();
-    });
-
-    document.getElementById('restore-btn').addEventListener('click', () => {
-      document.getElementById('file-input').click();
-    });
-
-    document.getElementById('file-input').addEventListener('change', (e) => {
-      const file = e.target.files[0];
-      if (!file) return;
-
-      const reader = new FileReader();
-      reader.onload = (event) => {
-        try {
-          const data = JSON.parse(event.target.result);
-          if (confirm('Ripristinare il backup? I dati attuali saranno sovrascritti.')) {
-            if (data.transactions) {
-              const transactionsRef = ref(database, `transactions/${currentUser.uid}`);
-              set(transactionsRef, null).then(() => {
-                data.transactions.forEach(t => {
-                  const newRef = push(transactionsRef);
-                  set(newRef, t);
+        function loadTransactions() {
+            const userRef = database.ref('transactions/' + currentUser.uid);
+            userRef.off();
+            userRef.on('value', (snapshot) => {
+                transactions = [];
+                snapshot.forEach((childSnapshot) => {
+                    transactions.push({ id: childSnapshot.key, ...childSnapshot.val() });
                 });
-              });
-            }
-            if (data.salvadanaio !== undefined) {
-              const piggyBankRef = ref(database, `piggybank/${currentUser.uid}`);
-              set(piggyBankRef, data.salvadanaio);
-            }
-            alert('Backup ripristinato con successo!');
-          }
-        } catch (error) {
-          alert('Errore nel ripristino: ' + error.message);
+                updateStatistics();
+                loadHistory();
+                loadCassa();
+                buildMonthlySummary();
+            });
         }
-      };
-      reader.readAsText(file);
-    });
-  </script>
+
+        async function addTransaction() {
+            const descrizione = document.getElementById('descrizione').value;
+            const importo = parseFloat(document.getElementById('importo').value);
+            const tipo = document.getElementById('tipo').value;
+            const categoria = document.getElementById('categoria').value;
+
+            if (!descrizione || isNaN(importo)) {
+                alert('Compila tutti i campi!');
+                return;
+            }
+
+            const transaction = {
+                descrizione,
+                importo,
+                tipo,
+                categoria,
+                data: new Date().toISOString()
+            };
+
+            await database.ref('transactions/' + currentUser.uid).push(transaction);
+
+            document.getElementById('descrizione').value = '';
+            document.getElementById('importo').value = '';
+        }
+
+        function updateStatistics() {
+            const now = new Date();
+            const currentMonth = now.getMonth();
+            const currentYear = now.getFullYear();
+            const currentWeek = getWeekNumber(now);
+
+            let entrateMese = 0, usciteMese = 0;
+            let entrateSettimana = 0, usciteSettimana = 0;
+
+            transactions.forEach(t => {
+                const transDate = new Date(t.data);
+                const transMonth = transDate.getMonth();
+                const transYear = transDate.getFullYear();
+                const transWeek = getWeekNumber(transDate);
+
+                if (transMonth === currentMonth && transYear === currentYear) {
+                    if (t.tipo === 'entrata') entrateMese += t.importo;
+                    else usciteMese += t.importo;
+                }
+
+                if (transWeek === currentWeek && transYear === currentYear) {
+                    if (t.tipo === 'entrata') entrateSettimana += t.importo;
+                    else usciteSettimana += t.importo;
+                }
+            });
+
+            document.getElementById('entrateMese').textContent = `€${entrateMese.toFixed(2)}`;
+            document.getElementById('usciteMese').textContent = `€${usciteMese.toFixed(2)}`;
+            document.getElementById('bilancio').textContent = `€${(entrateMese - usciteMese).toFixed(2)}`;
+            document.getElementById('entrateSettimana').textContent = `€${entrateSettimana.toFixed(2)}`;
+            document.getElementById('usciteSettimana').textContent = `€${usciteSettimana.toFixed(2)}`;
+            document.getElementById('bilancioSettimana').textContent = `€${(entrateSettimana - usciteSettimana).toFixed(2)}`;
+
+            document.getElementById('salvadanaioTotale').textContent = `€${piggyTotal.toFixed(2)}`;
+        }
+
+        function getWeekNumber(date) {
+            const d = new Date(Date.UTC(date.getFullYear(), date.getMonth(), date.getDate()));
+            const dayNum = d.getUTCDay() || 7;
+            d.setUTCDate(d.getUTCDate() + 4 - dayNum);
+            const yearStart = new Date(Date.UTC(d.getUTCFullYear(), 0, 1));
+            return Math.ceil((((d - yearStart) / 86400000) + 1) / 7);
+        }
+
+        function showPage(ev, page) {
+            document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+            document.querySelectorAll('.nav-buttons button').forEach(b => b.classList.remove('active'));
+
+            document.getElementById(page + 'Page').classList.add('active');
+            if (ev && ev.target) ev.target.classList.add('active');
+
+            if (page === 'history') loadHistory();
+            if (page === 'cassa') {
+                loadCassa();
+                buildMonthlySummary();
+            }
+        }
+
+        function loadHistory() {
+            const filterTipo = document.getElementById('filterTipo').value;
+            const filterPeriodo = document.getElementById('filterPeriodo').value;
+            const now = new Date();
+
+            let filtered = transactions.filter(t => {
+                if (filterTipo !== 'tutti' && t.tipo !== filterTipo) return false;
+
+                const transDate = new Date(t.data);
+                if (filterPeriodo === 'settimana') {
+                    return getWeekNumber(transDate) === getWeekNumber(now) && transDate.getFullYear() === now.getFullYear();
+                }
+                if (filterPeriodo === 'mese') {
+                    return transDate.getMonth() === now.getMonth() && transDate.getFullYear() === now.getFullYear();
+                }
+                return true;
+            });
+
+            filtered.sort((a, b) => new Date(b.data) - new Date(a.data));
+
+            const historyList = document.getElementById('historyList');
+            historyList.innerHTML = '';
+
+            filtered.forEach(t => {
+                const div = document.createElement('div');
+                div.className = `transaction-item ${t.tipo}`;
+                div.innerHTML = `
+                    <div class="transaction-info">
+                        <strong>${t.descrizione}</strong> - ${t.categoria}<br>
+                        <small>${new Date(t.data).toLocaleString('it-IT')}</small>
+                    </div>
+                    <div class="transaction-amount ${t.tipo}">
+                        ${t.tipo === 'entrata' ? '+' : '-'}€${t.importo.toFixed(2)}
+                    </div>
+                    <button class="delete-btn" onclick="deleteTransaction('${t.id}')">✕</button>
+                `;
+                historyList.appendChild(div);
+            });
+        }
+
+        async function deleteTransaction(id) {
+            if (confirm('Sei sicuro di voler eliminare questa transazione?')) {
+                await database.ref('transactions/' + currentUser.uid + '/' + id).remove();
+            }
+        }
+
+        // ----- SALVADANAIO -----
+
+        function loadPiggybank() {
+            const totalRef = database.ref('piggybank/' + currentUser.uid + '/total');
+            const movementsRef = database.ref('piggybank/' + currentUser.uid + '/movements');
+
+            totalRef.off();
+            movementsRef.off();
+
+            totalRef.on('value', (snapshot) => {
+                const val = snapshot.val();
+                piggyTotal = val ? Number(val) : 0;
+                document.getElementById('salvadanaioTotale').textContent = `€${piggyTotal.toFixed(2)}`;
+                document.getElementById('salvadanaioTotaleSettings').textContent = `€${piggyTotal.toFixed(2)}`;
+            });
+
+            movementsRef.on('value', (snapshot) => {
+                piggyMovements = [];
+                snapshot.forEach(child => {
+                    piggyMovements.push({ id: child.key, ...child.val() });
+                });
+                renderPiggyHistory();
+            });
+        }
+
+        function renderPiggyHistory() {
+            const list = document.getElementById('piggyHistoryList');
+            list.innerHTML = '';
+
+            const sorted = [...piggyMovements].sort((a, b) => new Date(b.data) - new Date(a.data));
+
+            sorted.forEach(m => {
+                const div = document.createElement('div');
+                const tipoClass = m.tipo === 'deposito' ? 'entrata' : 'uscita';
+                const segno = m.tipo === 'deposito' ? '+' : '-';
+                div.className = `transaction-item ${tipoClass}`;
+                div.innerHTML = `
+                    <div class="transaction-info">
+                        <strong>${m.tipo === 'deposito' ? 'Deposito' : 'Prelievo'}</strong>${m.descrizione ? ' - ' + m.descrizione : ''}<br>
+                        <small>${new Date(m.data).toLocaleString('it-IT')}</small>
+                    </div>
+                    <div class="transaction-amount ${tipoClass}">
+                        ${segno}€${Number(m.importo).toFixed(2)}
+                    </div>
+                `;
+                list.appendChild(div);
+            });
+        }
+
+        async function addPiggyMovement() {
+            const importoInput = document.getElementById('piggyImporto');
+            const tipoSelect = document.getElementById('piggyTipo');
+            const descInput = document.getElementById('piggyDescrizione');
+
+            const importo = parseFloat(importoInput.value);
+            const tipo = tipoSelect.value;
+            const descrizione = descInput.value || '';
+
+            if (isNaN(importo) || importo <= 0) {
+                alert('Inserisci un importo valido per il salvadanaio.');
+                return;
+            }
+
+            let nuovoTotale = piggyTotal;
+            if (tipo === 'deposito') {
+                nuovoTotale += importo;
+            } else {
+                nuovoTotale -= importo;
+            }
+
+            const baseRef = database.ref('piggybank/' + currentUser.uid);
+
+            const movement = {
+                importo,
+                tipo,
+                descrizione,
+                data: new Date().toISOString()
+            };
+
+            await baseRef.child('total').set(nuovoTotale);
+            await baseRef.child('movements').push(movement);
+
+            importoInput.value = '';
+            descInput.value = '';
+        }
+
+        // ----- BACKUP -----
+
+        function downloadBackup() {
+            const data = {
+                transactions,
+                piggybank: {
+                    total: piggyTotal,
+                    movements: piggyMovements
+                }
+            };
+            const json = JSON.stringify(data, null, 2);
+            const blob = new Blob([json], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `budget-backup-${new Date().toISOString().split('T')[0]}.json`;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+        }
+
+        // ----- CASSA -----
+
+        function loadCassa() {
+            const sorted = [...transactions].sort((a, b) => new Date(a.data) - new Date(b.data));
+            const tbody = document.getElementById('cassaTableBody');
+            const filtroMeseSelect = document.getElementById('cassaMese');
+            const filtroMese = filtroMeseSelect ? filtroMeseSelect.value : 'tutti';
+
+            tbody.innerHTML = '';
+            
+            let saldo = 0;
+            let totEntrate = 0;
+            let totUscite = 0;
+            
+            sorted.forEach(t => {
+                const d = new Date(t.data);
+                const year = d.getFullYear();
+                const month = (d.getMonth() + 1).toString().padStart(2, '0');
+                const key = `${year}-${month}`;
+
+                if (filtroMese !== 'tutti' && key !== filtroMese) {
+                    return;
+                }
+
+                const importo = t.tipo === 'entrata' ? t.importo : -t.importo;
+                saldo += importo;
+                if (t.tipo === 'entrata') totEntrate += t.importo;
+                else totUscite += t.importo;
+                
+                const tr = document.createElement('tr');
+                tr.innerHTML = `
+                    <td>${d.toLocaleDateString('it-IT')}</td>
+                    <td>${t.descrizione}</td>
+                    <td class="entrata">${t.tipo === 'entrata' ? '€' + t.importo.toFixed(2) : ''}</td>
+                    <td class="uscita">${t.tipo === 'uscita' ? '€' + t.importo.toFixed(2) : ''}</td>
+                    <td class="saldo">€${saldo.toFixed(2)}</td>
+                `;
+                tbody.appendChild(tr);
+            });
+            
+            document.getElementById('cassaTotEntrate').textContent = '€' + totEntrate.toFixed(2);
+            document.getElementById('cassaTotUscite').textContent = '€' + totUscite.toFixed(2);
+            document.getElementById('cassaSaldoFinale').textContent = '€' + saldo.toFixed(2);
+        }
+
+        // ----- RIEPILOGO MENSILE -----
+
+        function buildMonthlySummary() {
+            const map = {}; // key: YYYY-MM, value: {entrate, uscite}
+
+            transactions.forEach(t => {
+                const d = new Date(t.data);
+                const year = d.getFullYear();
+                const month = (d.getMonth() + 1).toString().padStart(2, '0');
+                const key = `${year}-${month}`;
+
+                if (!map[key]) {
+                    map[key] = { entrate: 0, uscite: 0 };
+                }
+                if (t.tipo === 'entrata') {
+                    map[key].entrate += t.importo;
+                } else {
+                    map[key].uscite += t.importo;
+                }
+            });
+
+            const tbody = document.getElementById('riepilogoMensileBody');
+            if (!tbody) return;
+            tbody.innerHTML = '';
+
+            const keys = Object.keys(map).sort(); // ordinato per data
+
+            keys.forEach(key => {
+                const { entrate, uscite } = map[key];
+                const saldoMese = entrate - uscite;
+
+                const [y, m] = key.split('-');
+                const dataFake = new Date(Number(y), Number(m) - 1, 1);
+                const nomeMese = dataFake.toLocaleDateString('it-IT', { month: 'long', year: 'numeric' });
+
+                const tr = document.createElement('tr');
+                tr.dataset.meseKey = key;
+                tr.innerHTML = `
+                    <td>${nomeMese}</td>
+                    <td class="entrata">€${entrate.toFixed(2)}</td>
+                    <td class="uscita">€${uscite.toFixed(2)}</td>
+                    <td class="saldo">€${saldoMese.toFixed(2)}</td>
+                `;
+                tr.addEventListener('click', () => {
+                    const select = document.getElementById('cassaMese');
+                    if (select) {
+                        select.value = key;
+                    }
+                    loadCassa();
+                });
+                tbody.appendChild(tr);
+            });
+        }
+    </script>
 </body>
 </html>
