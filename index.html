@@ -326,7 +326,7 @@
             try {
                 await auth.signInWithEmailAndPassword(email, password);
             } catch (error) {
-                showError(error.message);
+                alert('ERRORE: ' + error.message); showError(error.message);
             }
         }
 
@@ -340,7 +340,7 @@
             try {
                 await auth.createUserWithEmailAndPassword(email, password);
             } catch (error) {
-                showError(error.message);
+                alert('ERRORE: ' + error.message); showError(error.message);
             }
         }
 
