@@ -14,7 +14,8 @@ jobs:
       - name: Install Firebase Tools
         run: npm install -g firebase-tools
 
+      - name: Write Service Account to file
+        run: echo '${{ secrets.FIREBASE_SERVICE_ACCOUNT_BUDGET_FAMIGLIA_4477E }}' > /home/runner/sa.json
+
       - name: Deploy to Firebase Hosting
-        run: firebase deploy --only hosting --project budget-famiglia-4477e
-        env:
-          FIREBASE_SERVICE_ACCOUNT: ${{ secrets.FIREBASE_SERVICE_ACCOUNT_BUDGET_FAMIGLIA_4477E }}
+        run: GOOGLE_APPLICATION_CREDENTIALS=/home/runner/sa.json firebase deploy --only hosting --project budget-famiglia-4477e
